@@ -19,7 +19,7 @@ interface IProfile {
 
     function viewContest(uint256 _id) external view returns (string memory);
 
-    function viewAttestation(address _authorizer, uint256 _id) external view returns (string memory);
+    function viewAttestation(uint256 _id) external view returns (string memory);
 
     function isAuthorizer(address _authorizer) external view returns (bool);
 }

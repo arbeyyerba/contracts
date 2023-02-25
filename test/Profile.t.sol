@@ -19,10 +19,10 @@ contract ProfileTest is Test {
 
     function testAuthorizerAddition() public {
         eg.addAuthorizer(address(ek));
-        console.log(eg.authorizedContract(address(ek)));
+        console.log(eg.authorizedContracts(address(ek)));
 
         eg.removeAuthorizer(address(ek));
-        console.log(eg.authorizedContract(address(ek)));
+        console.log(eg.authorizedContracts(address(ek)));
     }
 
     function testAttest() public {
@@ -40,7 +40,8 @@ contract ProfileTest is Test {
     function testContest() public {
         testAttest();
         eg.contest(0, "Because I am");
-        console.log(eg.contestations(0));
+        (, , bytes memory data) = eg.contestations(0);
+        console.log(string(data));
     }
 
     function testViewAttestation() public {
