@@ -10,6 +10,8 @@ interface IAuthorize {
     //Authorizer decides criteria to accept profile
     function canAttest(address profile) external view returns (bool);
 
-    //
-    function decodeAttest(bytes calldata data) external view returns (bytes memory);
+    //required to save storage costs
+    //has to be decoded by authorizer because profile does not know what the attest params
+    //are attested 
+    function decodeAttest(bytes calldata data) external view returns (string memory);
 }
