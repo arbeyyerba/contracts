@@ -19,9 +19,11 @@ contract Profile is IProfile, Ownable {
     // EXTERNAL
     //
 
+    /// @notice Attesters needs profile address, authorizer address, and attest string
     function attest(address _authorizer, string calldata _attest) external {
         require(authorizedContract[_authorizer], "Not Authorized");
-        require(IAuthorize(_authorizer).canAttest(msg.sender), "Authorizer Denied");        
+        require(IAuthorize(_authorizer).canAttest(msg.sender), "Authorizer Denied");
+        require(IAuthorize(_authorizer).canReceive(owner()));     
         bytes memory attestHash = abi.encode(_attest);
         attestations[msg.sender][id] = attestHash;
         emit Attest(msg.sender, id, attestHash);
