@@ -22,9 +22,4 @@ contract Authorizer is IAuthorize {
         require(profile == params.owner);
         return params.doAuth;
     }
-
-    // IAuthorize
-    function decodeAttest(bytes calldata data) external view returns (string memory) {
-        return string(bytes(abi.decode(data, (string))));
-    } //might be able to move this to profile since it only stores a string
 }
