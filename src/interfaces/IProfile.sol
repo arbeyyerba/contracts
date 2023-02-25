@@ -5,11 +5,11 @@ interface IProfile {
 
     event Attest(address);
 
-    event Delegate(address);
+    event Authorize(address);
 
-    event Revoke(AttestParams);
+    event Contest(uint256 id, bytes message);
 
-   function attest(AttestParams memory params) external;
+   function attest() external;
 
    function delegate(address newDelegate) external;
 
