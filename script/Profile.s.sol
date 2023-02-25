@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "../src/Profile.sol";
-import "../src/mocks/Authorizer.sol";
+import "../src/EmployerDAO.sol";
 
 contract TestState is Script {
     function setUp() public {}
@@ -14,8 +14,8 @@ contract TestState is Script {
 
         // deploy some contracts for funsies.
         Profile profile = new Profile();
-        Authorizer alwaysAuthorizer = new Authorizer(true);
-        Authorizer neverAuthorizer = new Authorizer(false);
+        EmployerDAO alwaysAuthorizer = new EmployerDAO(true);
+        EmployerDAO neverAuthorizer = new EmployerDAO(false);
 
         // vm.stopBroadcast();
     }

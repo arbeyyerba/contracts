@@ -3,18 +3,18 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "../src/Profile.sol";
-import "../src/mocks/Authorizer.sol";
+import "../src/EmployerDAO.sol";
 
 contract ProfileTest is Test {
    
     Profile public eg;
-    Authorizer public ek;
+    EmployerDAO public ek;
 
     address public profile1 = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
    function setUp() public {
         eg = new Profile();
-        ek = new Authorizer(true);
+        ek = new EmployerDAO(true);
    }
 
     function testAuthorizerAddition() public {
@@ -40,7 +40,7 @@ contract ProfileTest is Test {
     function testContest() public {
         testAttest();
         eg.contest(0, "Because I am");
-        console.log(eg.contestations(0));
+        console.log(string(eg.contestations(0)));
     }
 
     function testViewAttestation() public {
