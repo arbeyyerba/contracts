@@ -8,12 +8,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Profile is IProfile, Ownable {
 
     mapping(address => bool) public authorizedContract;
-    mapping(uint256 => string) contestations;
+    mapping(uint256 => string) public contestations;
     //returns the hash of attestation, must be decoded by authorizer
-    mapping(address => mapping(uint256 => bytes)) attestations;
+    mapping(address => mapping(uint256 => bytes)) public attestations;
 
     //use counters if necessary
-    uint256 id;
+    uint256 id = 0;
 
     //
     // EXTERNAL
@@ -60,12 +60,16 @@ contract Profile is IProfile, Ownable {
 
     function viewAttestation(address _authorizer, uint256 _id) external view returns (string memory) {
         require(authorizedContract[_authorizer], "Not Authorized");
-        return IAuthorize(_authorizer).decodeAttest(attestations[_authorizer][_id]);
+        return _decodeAttest(attestations[_authorizer][_id]);
     }
 
     function isAuthorizer(address _authorizer) external view returns (bool) {
         return authorizedContract[_authorizer];
     }
 
+    //internal atm
+    function _decodeAttest(bytes storage data) internal pure returns (string memory) {
+        return string(bytes(abi.decode(data, (string))));
+    }
 
 }
