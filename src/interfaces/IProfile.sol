@@ -13,5 +13,13 @@ interface IProfile {
 
    function contest(uint256 _id, string calldata reason) external;
 
+    function addAuthorizer(address newAuthorizer) external;
 
+    function removeAuthorizer(address badAuthorizer) external;
+
+    function viewContest(uint256 _id) external view returns (string memory);
+
+    function viewAttestation(address _authorizer, uint256 _id) external view returns (string memory);
+
+    function isAuthorizer(address _authorizer) external view returns (bool);
 }

@@ -62,4 +62,10 @@ contract Profile is IProfile, Ownable {
         require(authorizedContract[_authorizer], "Not Authorized");
         return IAuthorize(_authorizer).decodeAttest(attestations[_authorizer][_id]);
     }
+
+    function isAuthorizer(address _authorizer) external view returns (bool) {
+        return authorizedContract[_authorizer];
+    }
+
+
 }
