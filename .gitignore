@@ -14,4 +14,4 @@ docs/
 .env
 
 #foundry.toml file
-/foundry.toml/
+foundry.toml

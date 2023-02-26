@@ -31,7 +31,7 @@ contract EmployerDAO is IAuthorize {
         employees.push(msg.sender);
     }
 
-    function canAttest(address profile) external view returns (bool) {
+    function isApprovedToSend(address profile) external view returns (bool) {
         require(profile == params.owner);
 
         //Authorizer requires profile to have a certain amount of USD value in the wallet
@@ -46,7 +46,7 @@ contract EmployerDAO is IAuthorize {
         return params.doAuth;
     }
 
-    function canReceive(address profile) external view returns (bool) {
+    function isApprovedToReceive(address profile) external view returns (bool) {
         require(isEmployee(profile));
         return true;
     }
