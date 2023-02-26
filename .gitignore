@@ -12,6 +12,3 @@ docs/
 
 # Dotenv file
 .env
-
-#foundry.toml file
-foundry.toml

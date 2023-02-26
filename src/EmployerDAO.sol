@@ -17,8 +17,6 @@ contract EmployerDAO is IAuthorize {
 
     address[] public employees;
 
-    // IAuthorize
-
     constructor(bool _doAuth) {
         params.doAuth = _doAuth;
         params.owner = msg.sender;
@@ -35,7 +33,7 @@ contract EmployerDAO is IAuthorize {
         require(profile == params.owner);
 
         //Authorizer requires profile to have a certain amount of USD value in the wallet
-        //math: 8+18-18 = 8 decimals, checks if address has > 1 USD
+        //math: 8+18-18 = 8 decimals, checks if address has > 1 USD with of MATIC
         require(uint256(getLatestPrice()) * profile.balance / 1 ether > 1e8, "Not enough tokens");
 
         //Authorizer requires an attester to be an employee
