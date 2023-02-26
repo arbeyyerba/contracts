@@ -4,6 +4,9 @@ out = 'out'
 libs = ['lib']
 
 [rpc_endpoints]
-matic = "https://polygon-mumbai.g.alchemy.com/v2/${matic_key}"
+matic = "${MATIC_RPC_URL}"
+
+[etherscan]
+matic = { key = "MATICSCAN_API_KEY" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
