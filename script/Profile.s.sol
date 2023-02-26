@@ -17,6 +17,8 @@ contract ProfileScript is Script {
         EmployerDAO alwaysAuthorizer = new EmployerDAO(true);
         EmployerDAO neverAuthorizer = new EmployerDAO(false);
 
-        // vm.stopBroadcast();
+        
+
+        vm.stopBroadcast();
     }
 }

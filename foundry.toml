@@ -9,4 +9,8 @@ matic = "${MATIC_RPC_URL}"
 [etherscan]
 matic = { key = "MATICSCAN_API_KEY" }
 
+# For local deployment, use:
+# forge script script/Profile.s.sol:ProfileScript --fork-url http://localhost:8545 --broadcast
+
+
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
