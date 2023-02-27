@@ -9,6 +9,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract ProfileTest is Test {
     using Strings for uint256;
    
+    uint256 polygon;
+
     Profile public eg;
     SporkAuthorizer public ek;
 
@@ -17,6 +19,9 @@ contract ProfileTest is Test {
     address public Austin = 0x096f6A2b185d63D942750A2D961f7762401cbA17;
 
    function setUp() public {
+        string memory POLYGON_RPC_URL = vm.envString("POLYGON_RPC_URL");
+        polygon = vm.createSelectFork(POLYGON_RPC_URL);
+
         console.log(msg.sender);
         vm.prank(Austin);
         eg = new Profile();
