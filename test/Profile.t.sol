@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "../src/Profile.sol";
 import "../src/SporkAuthorizer.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract ProfileTest is Test {
@@ -13,57 +14,73 @@ contract ProfileTest is Test {
 
     Profile public eg;
     SporkAuthorizer public ek;
+    address[] public list;
+
 
     address public profile1 = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-    address public Austin = 0x096f6A2b185d63D942750A2D961f7762401cbA17;
+    address public cam = 0x9CF1f938AD0AABddff1Cf372eF8f0793056D0ac9;
+    address public ethdevn = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
 
    function setUp() public {
         string memory POLYGON_RPC_URL = vm.envString("POLYGON_RPC_URL");
         polygon = vm.createSelectFork(POLYGON_RPC_URL);
 
-        console.log(msg.sender);
-        vm.prank(Austin);
+        vm.prank(cam);
         eg = new Profile();
-        console.log(eg.owner());
-
         ek = new SporkAuthorizer();
    }
 
     function testAuthorizerAddition() public {
-        vm.prank(Austin);
+        vm.prank(cam);
         eg.addAuthorizer(address(ek));
-        console.log(eg.authorizedContract(address(ek)));
+        //console.log(eg.authorizedContract(address(ek)));
 
-        vm.prank(Austin);
+        vm.prank(cam);
         eg.removeAuthorizer(address(ek));
-        console.log(eg.authorizedContract(address(ek)));
+        //console.log(eg.authorizedContract(address(ek)));
     }
 
     function testAttest() public {
 
-        vm.prank(Austin);
+        vm.prank(cam);
         eg.addAuthorizer(address(ek));
 
         console.log(uint256(ek.getLatestPrice()).toString());
-        eg.attest(address(ek), "Hello World");
+        uint256 temp = address(cam).balance;
+        console.log(vm.toString(temp));
+        console.log(vm.toString(uint256(ek.getLatestPrice()) * temp));
 
-        //console.log(string(bytes(abi.decode(eg.attestations(address(ek), 0), (string)))));
-        //assertEq(eg.viewAttestation(address(ek), 0), "Hello World");
+        vm.prank(cam);
+        eg.attest(address(ek), "Hello World");
     }
 
     //logs not returning data
-    function testContest() public {
+    function testGetContest() public {
         testAttest();
+
+        vm.prank(cam);
         eg.contest(address(msg.sender), 0, "Because I am");
+
         console.log(eg.contestations(msg.sender, 0));
     }
 
-    function testViewAttestation() public {
-        vm.startPrank(Austin);
+    function testGetAttestation() public {
+        vm.prank(cam);
         eg.addAuthorizer(address(ek));
+
+        vm.prank(cam);
         eg.attest(address(ek), "Hello World");
-        console.log(eg.attestations(msg.sender, 0));
-        //console.log(eg.viewAttestation(address(ek), 0), "Hello World");
+
+        console.log(eg.getAttestation(cam, 0));
+    }
+
+    function testGetAuthorizers() public {
+        list.push(profile1);
+        list.push(cam);
+        list.push(ethdevn);
+        for(uint i=0; i < list.length; i++) {
+            console.log(vm.toString(list[i]));
+        }
     }
 }

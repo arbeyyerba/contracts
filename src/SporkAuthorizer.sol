@@ -14,7 +14,7 @@ contract SporkAuthorizer is IAuthorize {
         AggregatorV3Interface(
                 0xAB594600376Ec9fD91F8e885dADF0CE036862dE0 //polygon MATIC/USD 0% 27s 8 decimals
             );
-    address constant ethDenverNFT = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
+    address constant public ethDenverNFT = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
 
     constructor() {
    

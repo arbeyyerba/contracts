@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Profile is IProfile, Ownable {
 
-    mapping(address => bool) public authorizedContract;
+    address[] authorizedContracts;
     mapping(address => mapping(uint256 => string)) public contestations;
     mapping(address => string[]) public attestations;
 
@@ -25,7 +25,7 @@ contract Profile is IProfile, Ownable {
 
     /// @notice Attesters needs profile address, authorizer address, and attest message, IPFS CID (32bytes)
     function attest(address _authorizer, string calldata message) external {
-        require(authorizedContract[_authorizer], "Authorizer Denied");
+        require(isAuthorizer(_authorizer), "Authorizer Denied");
         require(IAuthorize(_authorizer).isApprovedToSend(msg.sender), "Sender Denied");
         require(IAuthorize(_authorizer).isApprovedToReceive(owner()), "Receiver Denied");
 
@@ -39,13 +39,13 @@ contract Profile is IProfile, Ownable {
 
     /// @dev Add authorizer
     function addAuthorizer(address newAuthorizer) external onlyOwner {
-        authorizedContract[newAuthorizer] = true;
+        authorizedContracts.push(newAuthorizer);
         emit AuthorizeChange(newAuthorizer, true);
     }
 
     /// @dev Removes authorizer
     function removeAuthorizer(address badAuthorizer) external onlyOwner{
-        authorizedContract[badAuthorizer] = false;
+        authorizedContracts.push(badAuthorizer);
         emit AuthorizeChange(badAuthorizer, false);
     }
 
@@ -63,17 +63,16 @@ contract Profile is IProfile, Ownable {
         return owner();
     }
 
-    function viewContest(address sender, uint256 index) external view returns (string memory) {
+    function getContest(address sender, uint256 index) external view returns (string memory) {
         return contestations[sender][index];
     }
 
-    function viewAttestation(address _authorizer, uint256 index) external view returns (string memory) {
-        require(authorizedContract[_authorizer], "Not Authorized");
-        return contestations[_authorizer][index];
+    function getAttestation(address sender, uint256 index) external view returns (string memory) {
+        return attestations[sender][index];
     }
 
-    function isAuthorizer(address _authorizer) external view returns (bool) {
-        return authorizedContract[_authorizer];
+    function getAuthorizerList(address[] calldata authorizers) external pure returns (address[] calldata) {
+        return authorizers;
     }
 
     //
@@ -82,5 +81,15 @@ contract Profile is IProfile, Ownable {
 
     function getAttestLength(address sender) public view returns (uint256) {
         return attestations[sender].length;
+    }
+
+    function isAuthorizer(address _authorizer) public view returns (bool) {
+        for(uint i=0; i < authorizedContracts.length; i++) {
+            if(authorizedContracts[i] == _authorizer) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
