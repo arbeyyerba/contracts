@@ -26,22 +26,19 @@ contract ProfileTest is Test {
    }
 
     function testAuthorizerAddition() public {
-        vm.startPrank(Austin);
+        vm.prank(Austin);
         eg.addAuthorizer(address(ek));
         console.log(eg.authorizedContract(address(ek)));
 
+        vm.prank(Austin);
         eg.removeAuthorizer(address(ek));
         console.log(eg.authorizedContract(address(ek)));
     }
 
     function testAttest() public {
 
-        vm.startPrank(Austin);
-        //vm.expectRevert();
-        //eg.attest(address(ek), "Hello World");
-
+        vm.prank(Austin);
         eg.addAuthorizer(address(ek));
-        vm.stopPrank();
 
         console.log(uint256(ek.getLatestPrice()).toString());
         eg.attest(address(ek), "Hello World");

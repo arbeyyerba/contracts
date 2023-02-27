@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract SporkAuthorizer is IAuthorize {
     // Mainnet Polygon
-    AggregatorV3Interface constant priceFeed = 
+    AggregatorV3Interface constant public priceFeed = 
         AggregatorV3Interface(
                 0xAB594600376Ec9fD91F8e885dADF0CE036862dE0 //polygon MATIC/USD 0% 27s 8 decimals
             );
@@ -20,22 +20,26 @@ contract SporkAuthorizer is IAuthorize {
    
     }
 
-    function isApprovedToSend(address profile) external view returns (bool) {
+    /// @notice Profile contract calls Authorizer contract. 
+    /// @param sender is the original transaction sender
+    function isApprovedToSend(address sender) external view returns (bool) {
         //Authorizer requires profile to have a certain amount of USD value in the wallet
         //math: 8+18-18 = 8 decimals, checks if address has > 0.01 USD worth of MATIC
-        require(uint256(getLatestPrice()) * profile.balance / 1 ether > 1e6, "Not enough tokens");
+        require(uint256(getLatestPrice()) * sender.balance / 1 ether > 1e6, "Not enough tokens");
 
         //Sender required to have a EthDenver2023 NFT ticket
-        require(IERC721(ethDenverNFT).balanceOf(IProfile(profile).getOwner()) > 0, "Did not attend EthDevner2023");
+        require(IERC721(ethDenverNFT).balanceOf(sender) > 0, "Did not attend EthDevner2023");
 
         
 
         return true;
     }
 
-    function isApprovedToReceive(address profile) external view returns (bool) {
+    /// @notice Profile contract calls Authorizer contract
+    /// @param profileOwner is the owner of the profile contract
+    function isApprovedToReceive(address profileOwner) external view returns (bool) {
         //Receiver required to have a EthDenver2023 NFT ticket
-        require(IERC721(ethDenverNFT).balanceOf(IProfile(profile).getOwner()) > 0, "Did not attend EthDevner2023");
+        require(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0, "Did not attend EthDevner2023");
         return true;
     }
 

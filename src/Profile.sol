@@ -5,11 +5,16 @@ import "./interfaces/IProfile.sol";
 import "./interfaces/IAuthorize.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+/**
+    @notice This is the first iteration of a Profile contract. This contract has basic functionality.
+        Store the attests and contests of users as strings on-chain given they meet the Authorizer's 
+        criteria. Future implementations will use a different more efficient storage method. 
+ */
+
 contract Profile is IProfile, Ownable {
 
     mapping(address => bool) public authorizedContract;
     mapping(address => mapping(uint256 => string)) public contestations;
-    //returns the hash of attestation, must be decoded by authorizer
     mapping(address => string[]) public attestations;
 
     //encodePacked(address, string[index]) = more gas efficient, future gas optimization
@@ -62,10 +67,6 @@ contract Profile is IProfile, Ownable {
         return contestations[sender][index];
     }
 
-    function getAttestLength(address sender) public view returns (uint256) {
-        return attestations[sender].length;
-    }
-
     function viewAttestation(address _authorizer, uint256 index) external view returns (string memory) {
         require(authorizedContract[_authorizer], "Not Authorized");
         return contestations[_authorizer][index];
@@ -73,5 +74,13 @@ contract Profile is IProfile, Ownable {
 
     function isAuthorizer(address _authorizer) external view returns (bool) {
         return authorizedContract[_authorizer];
+    }
+
+    //
+    // PUBLIC VIEW
+    //
+
+    function getAttestLength(address sender) public view returns (uint256) {
+        return attestations[sender].length;
     }
 }
