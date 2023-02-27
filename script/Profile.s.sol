@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "../src/Profile.sol";
-import "../src/EmployerDAO.sol";
+import "../src/SporkAuthorizer.sol";
 
 contract ProfileScript is Script {
     function setUp() public {}
@@ -14,8 +14,8 @@ contract ProfileScript is Script {
 
         // deploy some contracts for funsies.
         Profile profile = new Profile();
-        EmployerDAO alwaysAuthorizer = new EmployerDAO(true);
-        EmployerDAO neverAuthorizer = new EmployerDAO(false);
+        SporkAuthorizer alwaysAuthorizer = new SporkAuthorizer();
+        SporkAuthorizer neverAuthorizer = new SporkAuthorizer();
 
         
 

@@ -8,27 +8,24 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Profile is IProfile, Ownable {
 
     mapping(address => bool) public authorizedContract;
-    mapping(uint256 => bytes) public contestations;
+    mapping(address => mapping(uint256 => string)) public contestations;
     //returns the hash of attestation, must be decoded by authorizer
-    mapping(address => mapping(uint256 => bytes)) public attestations;
+    mapping(address => string[]) public attestations;
 
-    //use counters if necessary
-    uint256 id = 0;
+    //encodePacked(address, string[index]) = more gas efficient, future gas optimization
 
     //
     // EXTERNAL
     //
 
-    /// @notice Attesters needs profile address, authorizer address, and attest string
-    function attest(address _authorizer, string calldata _attest) external {
+    /// @notice Attesters needs profile address, authorizer address, and attest message, IPFS CID (32bytes)
+    function attest(address _authorizer, string calldata message) external {
         require(authorizedContract[_authorizer], "Authorizer Denied");
         require(IAuthorize(_authorizer).isApprovedToSend(msg.sender), "Sender Denied");
         require(IAuthorize(_authorizer).isApprovedToReceive(owner()), "Receiver Denied");
 
-        bytes memory attestHash = abi.encode(_attest);
-        attestations[msg.sender][id] = attestHash;
-        emit Attest(msg.sender, id, attestHash);
-        id++;
+        attestations[msg.sender].push(message);
+        emit Attest(msg.sender, getAttestLength(msg.sender) - 1, message);
     }
 
     //
@@ -38,32 +35,36 @@ contract Profile is IProfile, Ownable {
     /// @dev Add authorizer
     function addAuthorizer(address newAuthorizer) external onlyOwner {
         authorizedContract[newAuthorizer] = true;
-        emit AuthorizeChange(newAuthorizer);
+        emit AuthorizeChange(newAuthorizer, true);
     }
 
     /// @dev Removes authorizer
     function removeAuthorizer(address badAuthorizer) external onlyOwner{
         authorizedContract[badAuthorizer] = false;
-        emit AuthorizeChange(badAuthorizer);
+        emit AuthorizeChange(badAuthorizer, false);
     }
 
-    /// @dev Stores contest data onchain
-    function contest(uint256 _id, string calldata reason) external onlyOwner {
-        contestations[id] = abi.encode(reason);
-        emit Contest(_id, reason);
+    /// @dev Stores contest message onchain
+    function contest(address attester, uint256 index, string calldata message) external onlyOwner {
+        contestations[attester][index] = message;
+        emit Contest(index, message);
     }
 
     //
     // EXTERNAL VIEW
     //
 
-    function viewContest(uint256 _id) external view returns (string memory) {
-        return string(bytes(abi.decode(contestations[_id], (string))));
+    function viewContest(address sender, uint256 index) external view returns (string memory) {
+        return contestations[sender][index];
     }
 
-    function viewAttestation(address _authorizer, uint256 _id) external view returns (string memory) {
+    function getAttestLength(address sender) public view returns (uint256) {
+        return attestations[sender].length;
+    }
+
+    function viewAttestation(address _authorizer, uint256 index) external view returns (string memory) {
         require(authorizedContract[_authorizer], "Not Authorized");
-        return string(bytes(abi.decode(attestations[_authorizer][_id], (string))));
+        return contestations[_authorizer][index];
     }
 
     function isAuthorizer(address _authorizer) external view returns (bool) {
