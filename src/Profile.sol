@@ -54,6 +54,10 @@ contract Profile is IProfile, Ownable {
     // EXTERNAL VIEW
     //
 
+    function getOwner() external view returns (address) {
+        return owner();
+    }
+
     function viewContest(address sender, uint256 index) external view returns (string memory) {
         return contestations[sender][index];
     }

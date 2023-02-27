@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "./interfaces/IAuthorize.sol";
+import "./interfaces/IProfile.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
@@ -25,7 +26,7 @@ contract SporkAuthorizer is IAuthorize {
         require(uint256(getLatestPrice()) * profile.balance / 1 ether > 1e6, "Not enough tokens");
 
         //Sender required to have a EthDenver2023 NFT ticket
-        require(IERC721(ethDenverNFT).balanceOf(profile) > 0, "Did not attend EthDevner2023");
+        require(IERC721(ethDenverNFT).balanceOf(IProfile(profile).getOwner()) > 0, "Did not attend EthDevner2023");
 
         
 
@@ -34,7 +35,7 @@ contract SporkAuthorizer is IAuthorize {
 
     function isApprovedToReceive(address profile) external view returns (bool) {
         //Receiver required to have a EthDenver2023 NFT ticket
-        require(IERC721(ethDenverNFT).balanceOf(profile) > 0, "Did not attend EthDevner2023");
+        require(IERC721(ethDenverNFT).balanceOf(IProfile(profile).getOwner()) > 0, "Did not attend EthDevner2023");
         return true;
     }
 

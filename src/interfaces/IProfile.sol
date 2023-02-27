@@ -9,8 +9,9 @@ interface IProfile {
 
     event Contest(uint256 index, string message);
 
-   function attest(address _authorizer, string calldata message) external;
+    function attest(address _authorizer, string calldata message) external;
 
-   function contest(address attester, uint256 index, string calldata reason) external;
+    function contest(address attester, uint256 index, string calldata reason) external;
 
+    function getOwner() external view returns (address);
 }
