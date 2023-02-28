@@ -54,18 +54,17 @@ contract SporkAuthorizer is IAuthorize {
     }
 
     function isValidTransactions(address profile, address target) external view returns (bool) {
-        /*string[] memory data = IProfile(profile).getAttestations[target];
-        bytes encodedData;
-        for(uint i = 0; i < string.length; i++){
-            tempData[i] = (abi.encodePacked(data[i]));
+        //expensive af step, need to improve baddly
+        string[] memory data = IProfile(profile).getAttestations(target);
+        
+        bytes32 hashedData = keccak256(abi.encodePacked(data[0]));
+        for(uint i = 1; i < data.length; i++){
+            hashedData ^= keccak256(abi.encodePacked(data[i]));
         }
 
-        if(!(
-            keccak256(tempData) == hashAttests[target]
-        )) revert InvalidTransactions(target, IProfile(profile).getAttestations[target]);
-    */
+        if(!(keccak256(abi.encodePacked(hashedData)) == keccak256(abi.encodePacked(hashedAttests[target])))) 
+            revert InvalidTransactions(target, IProfile(profile).getAttestations(target));
     }
-
 
     function getLatestPrice() public view returns (int) {
         // prettier-ignore
