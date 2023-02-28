@@ -34,7 +34,7 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
         if(!IAuthorize(_authorizer).isApprovedToSend(msg.sender)) revert SenderDenied(msg.sender);
         if(!IAuthorize(_authorizer).isApprovedToReceive(owner())) revert ReceiverDenied(owner());
 
-        attestations[msg.sender].push(message);
+        attestations[_authorizer].push(message);
         emit Attest(msg.sender, getAttestLength(msg.sender) - 1, message);
     }
 
@@ -72,14 +72,14 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
         return contestations[sender][index];
     }
 
-    function getAttestation(address sender, uint256 index) external view returns (string memory) {
-        return attestations[sender][index];
+    function getAttestation(address authorizer, uint256 index) external view returns (string memory) {
+        return attestations[authorizer][index];
     }
 
-    function getAuthorizerList(address[] calldata authorizers) external pure returns (address[] calldata) {
-        return authorizers;
-    }
 
+    function getAuthorizerList() external view returns (address[] memory) {
+        return authorizedContracts;
+    }
     //
     // PUBLIC VIEW
     //

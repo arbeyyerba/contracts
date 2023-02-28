@@ -14,6 +14,7 @@ contract ProfileTest is Test {
 
     Profile public eg;
     SporkAuthorizer public ek;
+    SporkAuthorizer public eo;
     address[] public list;
 
 
@@ -29,6 +30,7 @@ contract ProfileTest is Test {
         vm.prank(cam);
         eg = new Profile();
         ek = new SporkAuthorizer();
+        eo = new SporkAuthorizer();
    }
 
     function testAuthorizerAddition() public {
@@ -75,10 +77,23 @@ contract ProfileTest is Test {
         console.log(eg.getAttestation(cam, 0));
     }
 
-    function testGetAuthorizers() public {
+    function testList() public {
         list.push(profile1);
         list.push(cam);
         list.push(ethdevn);
+        for(uint i=0; i < list.length; i++) {
+            console.log(vm.toString(list[i]));
+        }
+    }
+
+    function testGetAuthorizers() public {
+        vm.prank(cam);
+        eg.addAuthorizer(address(ek));
+        vm.prank(cam);
+        eg.addAuthorizer(address(eo));
+        vm.prank(profile1);
+        list = eg.getAuthorizerList();
+
         for(uint i=0; i < list.length; i++) {
             console.log(vm.toString(list[i]));
         }
