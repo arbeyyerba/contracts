@@ -9,9 +9,18 @@ interface IProfile {
         mapping(address => AttestData)
 
         struct AttestData {
-        address sender;
-        string attest;
-    } */
+            address sender;
+            string attest;
+        } 
+
+        @dev Other idea: removes contest mapping, directly ties attest and contest together
+            drawback: -creates additional storage string that often times not used
+                      -more expensive to validate data (more data to encode/hash)
+        struct Endorse {
+            string attest;
+            string contest;
+        }
+    */
 
     event AuthorizeChange(address authorizer, bool status);
     event Attest(address sender, uint256 index, string message);

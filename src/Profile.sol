@@ -17,13 +17,13 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     //profile to authorizers
     address[] authorizedContracts;
 
-    //authorizer to sender
+    //authorizer to senders
     mapping(address => address[]) public attesters;
 
     //sender to messages
     mapping(address => string[]) public attestations;
 
-    //sender to string index to message
+    //sender and index to message
     mapping(address => mapping(uint256 => string)) public contestations;
 
 
