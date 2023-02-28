@@ -15,9 +15,12 @@ contract SporkAuthorizer is IAuthorize {
                 0xAB594600376Ec9fD91F8e885dADF0CE036862dE0 //polygon MATIC/USD 0% 27s 8 decimals
             );
     address constant public ethDenverNFT = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
+    
+    mapping(address => bytes32) public hashedAttests;
 
     error DidNotAttendEthDenver2023(address target);
     error NotEnoughTokens(uint256 amount);
+    error InvalidTransactions(address target, string[] data);
 
     constructor() {
    
@@ -33,7 +36,9 @@ contract SporkAuthorizer is IAuthorize {
         //Sender required to have a EthDenver2023 NFT ticket
         if(!(IERC721(ethDenverNFT).balanceOf(sender) > 0)) revert DidNotAttendEthDenver2023(sender);
 
-        
+        //store hashed sent message in mapping
+        //concat current hash with new msg, Recursive Hash
+
 
         return true;
     }
@@ -43,8 +48,24 @@ contract SporkAuthorizer is IAuthorize {
     function isApprovedToReceive(address profileOwner) external view returns (bool) {
         //Receiver required to have a EthDenver2023 NFT ticket
         if(!(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0)) revert DidNotAttendEthDenver2023(profileOwner);
+
+
         return true;
     }
+
+    function isValidTransactions(address profile, address target) external view returns (bool) {
+        /*string[] memory data = IProfile(profile).getAttestations[target];
+        bytes encodedData;
+        for(uint i = 0; i < string.length; i++){
+            tempData[i] = (abi.encodePacked(data[i]));
+        }
+
+        if(!(
+            keccak256(tempData) == hashAttests[target]
+        )) revert InvalidTransactions(target, IProfile(profile).getAttestations[target]);
+    */
+    }
+
 
     function getLatestPrice() public view returns (int) {
         // prettier-ignore

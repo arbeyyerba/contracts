@@ -17,12 +17,17 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     address[] authorizedContracts;
     mapping(address => mapping(uint256 => string)) public contestations;
     mapping(address => string[]) public attestations;
+    mapping(address => address[]) public attesters;
 
     //encodePacked(address, string[index]) = more gas efficient, future gas optimization
 
     error AuthorizerDenied();
     error SenderDenied(address sender);
     error ReceiverDenied(address receiver);
+
+    constructor() {
+        //put string name storage here
+    }
 
     //
     // EXTERNAL
@@ -74,6 +79,10 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
 
     function getAttestation(address sender, uint256 index) external view returns (string memory) {
         return attestations[sender][index];
+    }
+
+    function getAttestations(address sender) external view returns (string[] memory) {
+        return attestations[sender];
     }
 
     function getAuthorizerList(address[] calldata authorizers) external pure returns (address[] calldata) {
