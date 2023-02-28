@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "./interfaces/IProfile.sol";
 import "./interfaces/IAuthorize.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
     @notice This is the first iteration of a Profile contract. This contract has basic functionality.
@@ -11,7 +12,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
         criteria. Future implementations will use a different more efficient storage method. 
  */
 
-contract Profile is IProfile, Ownable {
+contract Profile is IProfile, Ownable, ReentrancyGuard {
 
     address[] authorizedContracts;
     mapping(address => mapping(uint256 => string)) public contestations;
@@ -19,15 +20,19 @@ contract Profile is IProfile, Ownable {
 
     //encodePacked(address, string[index]) = more gas efficient, future gas optimization
 
+    error AuthorizerDenied();
+    error SenderDenied();
+    error ReceiverDenied();
+
     //
     // EXTERNAL
     //
 
     /// @notice Attesters needs profile address, authorizer address, and attest message, IPFS CID (32bytes)
-    function attest(address _authorizer, string calldata message) external {
-        require(isAuthorizer(_authorizer), "Authorizer Denied");
-        require(IAuthorize(_authorizer).isApprovedToSend(msg.sender), "Sender Denied");
-        require(IAuthorize(_authorizer).isApprovedToReceive(owner()), "Receiver Denied");
+    function attest(address _authorizer, string calldata message) external nonReentrant {
+        if(!isAuthorizer(_authorizer)) revert AuthorizerDenied();
+        if(!IAuthorize(_authorizer).isApprovedToSend(msg.sender)) revert SenderDenied();
+        if(!IAuthorize(_authorizer).isApprovedToReceive(owner())) revert ReceiverDenied();
 
         attestations[msg.sender].push(message);
         emit Attest(msg.sender, getAttestLength(msg.sender) - 1, message);
