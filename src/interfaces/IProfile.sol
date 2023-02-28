@@ -3,16 +3,19 @@ pragma solidity ^0.8.13;
 
 interface IProfile {
 
-    struct AttestData {
+    /** @dev
+        Tried to incorporate struct, made validating authorizer data with keccak256 hash very expensive
+        authorizer to AttestData
+        mapping(address => AttestData)
+
+        struct AttestData {
         address sender;
         string attest;
-    }
-
-    event Attest(address sender, uint256 index, string message);
+    } */
 
     event AuthorizeChange(address authorizer, bool status);
-
-    event Contest(uint256 index, string message);
+    event Attest(address sender, uint256 index, string message);
+    event Contest(address sender, uint256 index, string message);
 
     function attest(address _authorizer, string calldata message) external;
 
