@@ -15,17 +15,15 @@ requires:
 
 This proposal defines a system where one contract or account can post a message to another contract in a given context as determined by an authorizer contract.
 
-Profile Contract: A deployed contract owned by an EOA or another contract. The owner of the contract may add Authorizer contracts to the determine who can post to their profile.
+Profile Contract: A deployed contract owned by an EOA or contract. The owner of the contract may add Authorizer contracts to the determine who can post to their profile. Profiles could represent and individual, organization, or a contract. They could be deployed by EOA's, multisigs, account abstracted accounts. Anyone entity can deploy multiple contracts.
 
-Authorizor Contract: A contract that determines verifies context and content of a post. If the poster, the recieving profile, and the message pass the authorization criteria, the post is accepted and can be written to the recievers profile. The poster and the reciever can have different criteria.
+Authorizor Contract: A contract that determines verifies context and content of a post. If the poster, the recieving profile, and the message pass the authorization criteria, the post is accepted and can be written to the recievers profile. The poster and the reciever can have different criteria. The authorizer saves the sender, reciever, and message. This data can be crosschecked against a profile contract to verify the integrity of the profile.
 
 This simple system creates opt-in permissionless reputation system. With it, developers could build reputation based markets, decentralized review boards, credit systems, and more.
 
 A simple implementation would be having the Authorizer verify that both the poster and the reciever own an NFT or a certain amount of an ERC 20 token. If so, they may post on eachother's profile.
 
 A more complex implementation would be defining the Authorizer so that the poster must have made a transactions to the reciever, in a certain time period. The Authorizer could also verify some off-chain test was passed and the message was formatted in a certain way.
-
-
 
 ## Motivation
 
@@ -36,11 +34,24 @@ With this standard, we could build:
 -Onchain credit systems. By configuring the authorizer to verify off-chain credit worthiness.
 -Labor markets. By configuring reviews of reputable employers and employees. Employees can own their reputation and verifiably prove it.
 
-We can imagine a world where restaurants coalesce around a single authorizer contract. That authorizer contract will have desirable criteria it.
+We can imagine a world where restaurants coalesce around a single trusted authorizer contract. They may even form a DAO to maintain the authorizer contract, deploy the profiles, and host a front-end application.
 
-We can also imagine a world where the legitimacy of a post or review is deterimined by the robustness of the authorizer contract. We imagine that networks and graphs will form around the authorizer contracts. Some will be serious, while others will be playfull amongst friends.
+The legitimacy of a post or review is deterimined by the robustness of the authorizer contract. We imagine that networks and graphs will form around the authorizer contracts. Some will be serious, while others will be playfull amongst friends.
 
+Authorizer contracts can verify arbitrary on or off-chain data. Depending on their authorization parameters, they will be more or less sybil resistant. They could require that a profile holds an NFT, does not hold an NFT, has a certain balance, meets an off-chain condition, and more.
 
+Profile holders will be able to own their own reputation via a deployed contract. They can opt-in to an authorizer contract. If they chose, they can delete a post from their profile. Front-ends will be able to check the posts against the stored posts on the authorizer contract. If they are not the same, the front-ends may raise a flag or disallow the content from being shown. 
+
+Prfoile holders may also contest posts on their profile. Front-ends will handle how these posts are handled.    
+
+1. Check the hashes
+2. Sybil resistance - every post has an authorizer. authorizers provide trusted moderation. we're not dealing with completely unknown actors...
+
+Authorizers keep negative posts. Organizations can burn scammers by minting a ERC721 to their address which there authorizer can check against.
+
+having a blacklist would disable posting and always return an invalid message hash indicating suspicious activity.
+
+reinventing your identity is a feature and not a bug. if you want to cut bad ties, that's your perogative in a decnetralized world.
 
 ## Specification
 
@@ -60,6 +71,8 @@ interface IAuthorize {
 
     //Authorizer defines critera to receive transaction
     function isApprovedToReceive(address profile) external view returns (bool);
+
+    //
 }
 
 pragma solidity ^0.8.13;
@@ -79,158 +92,6 @@ interface IProfile {
     function getOwner() external view returns (address);
 }
 
-### Registry
-
-The registry serves as a single entry point for projects wishing to utilize token bound accounts. It has two functions:
-
-- `createAccount` - deploys a token bound account for an ERC-721 token given an `implementation` address
-- `account` - a read-only function that computes the token bound account address for an ERC-721 token given an `implementation` address
-
-The registry SHALL deploy each token bound account as an [ERC-1167](./eip-1167.md) minimal proxy with immutable arguments.
-
-The the deployed bytecode of each token bound account SHALL have the following structure:
-
-```
-ERC-1167 Header               (10 bytes)
-<implementation (address)>    (20 bytes)
-ERC-1167 Footer               (15 bytes)
-STOP code                     (1 byte)
-<chainId (uint256)>           (32 bytes)
-<tokenContract (address)>     (32 bytes)
-<tokenId (uint256)>           (32 bytes)
-```
-
-For example, the token bound account with implementation address `0xbebebebebebebebebebebebebebebebebebebebe`, chain ID `1`, token contract `0xcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcf` and token ID `123` would have the following deployed bytecode:
-
-```
-363d3d373d3d3d363d73bebebebebebebebebebebebebebebebebebebebe5af43d82803e903d91602b57fd5bf3000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000cfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcf000000000000000000000000000000000000000000000000000000000000007b
-```
-
-Each token bound account contract SHALL delegate execution to a static account implementation address that implements the token bound account interface.
-
-The registry contract is permissionless, immutable, and has no owner. The registry can be deployed on any Ethereum chain using the following transaction:
-
-```json
-{
-  "nonce": "0x00",
-  "gasPrice": "0x09184e72a000",
-  "gasLimit": "0x27100",
-  "value": "0x00",
-  "data": "TODO",
-  "v": "0x1b",
-  "r": "TODO",
-  "s": "TODO"
-}
-```
-
-The registry contract will be deployed to the following address: `TBD`
-
-The registry SHALL deploy all token bound account contracts using the `create2` opcode with a salt value derived from the ERC-721 token contract address, token ID, and [EIP-155](./eip-155.md) chain ID.
-
-The registry SHALL implement the following interface:
-
-```solidity
-interface IERC6551Registry {
-    /// @dev Each registry MUST emit the AccountCreated event upon account creation
-    event AccountCreated(
-        address account,
-        address implementation,
-        uint256 chainId,
-        address tokenContract,
-        uint256 tokenId
-    );
-
-    /// @dev Creates a token bound account for an ERC-721 token.
-    ///
-    /// Emits AccountCreated event.
-    ///
-    /// @return the address of the created account
-    function createAccount(
-        address implementation,
-        uint256 chainId,
-        address tokenContract,
-        uint256 tokenId
-    ) external returns (address);
-
-    /// @dev Returns the computed address of a token bound account
-    ///
-    /// @return The computed address of the account
-    function account(
-        address implementation,
-        uint256 chainId,
-        address tokenContract,
-        uint256 tokenId
-    ) external view returns (address);
-}
-```
-
-### Account Interface
-
-All token bound accounts SHOULD be created via the registry.
-
-All token bound account implementations MUST implement [ERC-165](./eip-165.md) interface detection.
-
-All token bound account implementations MUST implement [ERC-1271](./eip-1271.md) signature validation.
-
-All token bound account implementations MUST implement the following interface:
-
-```solidity
-/// @dev the ERC-165 identifier for this interface is `0xeff4d378`
-interface IERC6551Account {
-    /// @dev Token bound accounts MUST implement a `receive` function.
-    ///
-    /// Token bound accounts MAY perform arbitrary logic to restrict conditions
-    /// under which Ether can be received.
-    receive() external payable;
-
-    /// @dev Executes `call` on address `to`, with value `value` and calldata
-    /// `data`.
-    ///
-    /// MUST revert and bubble up errors if call fails.
-    ///
-    /// By default, token bound accounts MUST allow the owner of the ERC-721 token
-    /// which owns the account to execute arbitrary calls using `executeCall`.
-    ///
-    /// Token bound accounts MAY implement additional authorization mechanisms
-    /// which limit the ability of the ERC-721 token holder to execute calls.
-    ///
-    /// Token bound accounts MAY implement additional execution functions which
-    /// grant execution permissions to other non-owner accounts.
-    ///
-    /// @return The result of the call
-    function executeCall(
-        address to,
-        uint256 value,
-        bytes calldata data
-    ) external payable returns (bytes memory);
-
-    /// @dev Returns identifier of the ERC-721 token which owns the
-    /// account
-    ///
-    /// The return value of this function MUST be constant - it MUST NOT change
-    /// over time.
-    ///
-    /// @return chainId The EIP-155 ID of the chain the ERC-721 token exists on
-    /// @return tokenContract The contract address of the ERC-721 token
-    /// @return tokenId The ID of the ERC-721 token
-    function token()
-        external
-        view
-        returns (
-            uint256 chainId,
-            address tokenContract,
-            uint256 tokenId
-        );
-
-    /// @dev Returns the owner of the ERC-721 token which controls the account
-    /// if the token exists.
-    ///
-    /// This is value is obtained by calling `ownerOf` on the ERC-721 contract.
-    ///
-    /// @return Address of the owner of the ERC-721 token which owns the account
-    function owner() external view returns (address);
-}
-```
 
 ## Rationale
 
