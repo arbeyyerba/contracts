@@ -16,6 +16,9 @@ contract SporkAuthorizer is IAuthorize {
             );
     address constant public ethDenverNFT = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
 
+    error DidNotAttendEthDenver2023(address target);
+    error NotEnoughTokens(uint256 amount);
+
     constructor() {
    
     }
@@ -25,10 +28,10 @@ contract SporkAuthorizer is IAuthorize {
     function isApprovedToSend(address sender) external view returns (bool) {
         //Authorizer requires profile to have a certain amount of USD value in the wallet
         //math: 8+18-18 = 8 decimals, checks if address has > 0.01 USD worth of MATIC
-        require(uint256(getLatestPrice()) * sender.balance / 1 ether > 1e6, "Not enough tokens");
+        if(!(uint256(getLatestPrice()) * sender.balance / 1 ether > 1e6)) revert NotEnoughTokens(sender.balance);
 
         //Sender required to have a EthDenver2023 NFT ticket
-        require(IERC721(ethDenverNFT).balanceOf(sender) > 0, "Did not attend EthDevner2023");
+        if(!(IERC721(ethDenverNFT).balanceOf(sender) > 0)) revert DidNotAttendEthDenver2023(sender);
 
         
 
@@ -39,7 +42,7 @@ contract SporkAuthorizer is IAuthorize {
     /// @param profileOwner is the owner of the profile contract
     function isApprovedToReceive(address profileOwner) external view returns (bool) {
         //Receiver required to have a EthDenver2023 NFT ticket
-        require(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0, "Did not attend EthDevner2023");
+        if(!(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0)) revert DidNotAttendEthDenver2023(profileOwner);
         return true;
     }
 

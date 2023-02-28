@@ -21,8 +21,8 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     //encodePacked(address, string[index]) = more gas efficient, future gas optimization
 
     error AuthorizerDenied();
-    error SenderDenied();
-    error ReceiverDenied();
+    error SenderDenied(address sender);
+    error ReceiverDenied(address receiver);
 
     //
     // EXTERNAL
@@ -31,8 +31,8 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     /// @notice Attesters needs profile address, authorizer address, and attest message, IPFS CID (32bytes)
     function attest(address _authorizer, string calldata message) external nonReentrant {
         if(!isAuthorizer(_authorizer)) revert AuthorizerDenied();
-        if(!IAuthorize(_authorizer).isApprovedToSend(msg.sender)) revert SenderDenied();
-        if(!IAuthorize(_authorizer).isApprovedToReceive(owner())) revert ReceiverDenied();
+        if(!IAuthorize(_authorizer).isApprovedToSend(msg.sender)) revert SenderDenied(msg.sender);
+        if(!IAuthorize(_authorizer).isApprovedToReceive(owner())) revert ReceiverDenied(owner());
 
         attestations[msg.sender].push(message);
         emit Attest(msg.sender, getAttestLength(msg.sender) - 1, message);
