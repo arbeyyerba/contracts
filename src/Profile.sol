@@ -30,12 +30,12 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
 
     /// @notice Attesters needs profile address, authorizer address, and attest message, IPFS CID (32bytes)
     function attest(address _authorizer, string calldata message) external nonReentrant {
-        if(!isAuthorizer(_authorizer)) revert AuthorizerDenied();
-        if(!IAuthorize(_authorizer).isApprovedToSend(msg.sender)) revert SenderDenied(msg.sender);
-        if(!IAuthorize(_authorizer).isApprovedToReceive(owner())) revert ReceiverDenied(owner());
+        // if(!isAuthorizer(_authorizer)) revert AuthorizerDenied();
+        // if(!IAuthorize(_authorizer).isApprovedToSend(msg.sender)) revert SenderDenied(msg.sender);
+        // if(!IAuthorize(_authorizer).isApprovedToReceive(owner())) revert ReceiverDenied(owner());
 
-        attestations[_authorizer].push(message);
-        emit Attest(msg.sender, getAttestLength(msg.sender) - 1, message);
+        // attestations[_authorizer].push(message);
+        // emit Attest(msg.sender, getAttestLength(msg.sender) - 1, message);
     }
 
     //
