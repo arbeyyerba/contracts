@@ -48,7 +48,7 @@ contract ProfileTest is Test {
     function testAttest() public {
 
         vm.prank(cam);
-        eg.addAuthorizer(address(eo));
+        eg.addAuthorizer(address(ek));
 
         // console.log(uint256(ek.getLatestPrice()).toString());
         // uint256 temp = address(cam).balance;
@@ -56,7 +56,9 @@ contract ProfileTest is Test {
         // console.log(vm.toString(uint256(ek.getLatestPrice()) * temp));
 
         vm.prank(cam);
-        eg.attest(address(eo), "Hello World");
+        eg.attest(address(ek), "Hello World");
+        
+        console.log(vm.toString(ek.getLatestValidatedHash(address(eg))));
     }
 
     function testHashes() public {

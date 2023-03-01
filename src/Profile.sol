@@ -26,9 +26,7 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
 
 
     error AuthorizerDenied();
-    error TransactionDenied();
-    error SenderDenied(address sender);
-    error ReceiverDenied(address receiver);
+    error TransactionDenied(address sender, address authorizer);
 
     constructor() {
         //put string name storage here
@@ -41,7 +39,8 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     /// @notice Attesters needs profile address, authorizer address, and attest message, IPFS CID (32bytes)
     function attest(address _authorizer, string calldata message) external nonReentrant {
         if(!isAuthorizer(_authorizer)) revert AuthorizerDenied();
-        IAuthorize(_authorizer).validateTransaction(msg.sender, address(this), message);
+        if(!(IAuthorize(_authorizer).validateTransaction(msg.sender, address(this), message))) 
+            revert TransactionDenied(msg.sender, _authorizer);
 
         attestations[_authorizer].push(Attestation(msg.sender, message));
         emit Attest(msg.sender, _authorizer, getAttestLength(_authorizer) - 1);
