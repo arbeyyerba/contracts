@@ -85,8 +85,7 @@ contract SporkAuthorizer is IAuthorize {
     }
 
     /// @dev This generates the new hash of the current attestation[] on Profile
-    function _generateNewHash(IProfile.Attestation[] memory data) internal pure returns (bytes32) {
-        bytes32 hashedData;
+    function _generateNewHash(IProfile.Attestation[] memory data) internal pure returns (bytes32 hashedData) {
         for(uint i = 0; i < data.length; i++){
             hashedData ^= keccak256(abi.encodePacked(abi.encode(data[i])));
         }
