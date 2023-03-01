@@ -71,16 +71,15 @@ contract ProfileTest is Test {
 
         vm.prank(cam);
         eg.attest(address(eo), "Hello World");
-        bytes32 hash1 = eo.getCurrentProfileHash(address(eg));
+        bytes32 hash1 = eo.getLatestValidatedHash(address(eg));
 
         vm.prank(cam);
         eg.attest(address(eo), "A brave new world");
-        bytes32 hash2 = eo.getCurrentProfileHash(address(eg));
+        bytes32 hash2 = eo.getLatestValidatedHash(address(eg));
 
         vm.prank(cam);
         eg.attest(address(eo), "world on fire");
-        bytes32 hash3 = eo.getCurrentProfileHash(address(eg));
-
+        bytes32 hash3 = eo.getLatestValidatedHash(address(eg));
 
         vm.prank(cam);
         eg.deleteAttestation(address(eo), 1);
@@ -94,7 +93,7 @@ contract ProfileTest is Test {
         // ensure that the hash does not change when the message is deleted.
         // since the message is no longer available, anyone recomputing the hash will get a
         // different result, and flag as suspicious.
-        assertEq(eo.getCurrentProfileHash(address(eg)), hash3);
+        assertEq(eo.getLatestValidatedHash(address(eg)), hash3);
     }
 
     //logs not returning data

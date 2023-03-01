@@ -20,7 +20,7 @@ contract DummyAuthorizer is IAuthorize {
         return true;
     }
 
-    function getCurrentProfileHash(address profile) external view returns (bytes32) {
+    function getLatestValidatedHash(address profile) external view returns (bytes32) {
         return hashedAttests[profile];
     }
 }

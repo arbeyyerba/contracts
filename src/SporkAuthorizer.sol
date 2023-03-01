@@ -25,37 +25,23 @@ contract SporkAuthorizer is IAuthorize {
    
     }
 
-    /// @notice Profile contract calls Authorizer contract. 
-    /// @param sender is the original transaction sender
-    function _isApprovedToSend(address sender) public view returns (bool) {
-        //Authorizer requires profile to have a certain amount of USD value in the wallet
-        //math: 8+18-18 = 8 decimals, checks if address has > 0.01 USD worth of MATIC
-        if(!(uint256(getLatestPrice()) * sender.balance / 1 ether > 1e6)) revert NotEnoughTokens(sender.balance);
-
-        //Sender required to have a EthDenver2023 NFT ticket
-        if(!(IERC721(ethDenverNFT).balanceOf(sender) > 0)) revert DidNotAttendEthDenver2023(sender);
-
-        return true;
-    }
-
     /// @notice Profile contract calls Authorizer contract
-    /// @param profileOwner is the owner of the profile contract
-    function _isApprovedToReceive(address profileOwner) public view returns (bool) {
-        //Receiver required to have a EthDenver2023 NFT ticket
-        if(!(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0)) revert DidNotAttendEthDenver2023(profileOwner);
-
-        return true;
-    }
-
+    /// @dev Need to validate msg.sender is an actual profile contract
+    /// @dev Need to validate sender is the tx.origin
     function validateTransaction(address sender, address profile, string calldata message) external returns (bool) {
+        //validate profile address, maybe use factory pattern?
+        //validate sender == tx.origin
         _isApprovedToReceive(IProfile(profile).getOwner());
         _isApprovedToSend(sender);
+
+        
+
         bytes32 currentHash = hashedAttests[profile];
         currentHash ^= keccak256(abi.encodePacked(message));
         hashedAttests[profile] = currentHash;
     }
 
-    function getCurrentProfileHash(address profile) external view returns (bytes32) {
+    function getLatestValidatedHash(address profile) external view returns (bytes32) {
         return hashedAttests[profile];
     }
 
@@ -69,5 +55,26 @@ contract SporkAuthorizer is IAuthorize {
             /*uint80 answeredInRound*/
         ) = priceFeed.latestRoundData();
         return price;
+    }
+
+    
+    /// @param sender is the original transaction sender
+    function _isApprovedToSend(address sender) internal view returns (bool) {
+        //Authorizer requires profile to have a certain amount of USD value in the wallet
+        //math: 8+18-18 = 8 decimals, checks if address has > 0.01 USD worth of MATIC
+        if(!(uint256(getLatestPrice()) * sender.balance / 1 ether > 1e6)) revert NotEnoughTokens(sender.balance);
+
+        //Sender required to have a EthDenver2023 NFT ticket
+        if(!(IERC721(ethDenverNFT).balanceOf(sender) > 0)) revert DidNotAttendEthDenver2023(sender);
+
+        return true;
+    }
+
+    /// @param profileOwner is the owner of the profile contract
+    function _isApprovedToReceive(address profileOwner) internal view returns (bool) {
+        //Receiver required to have a EthDenver2023 NFT ticket
+        if(!(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0)) revert DidNotAttendEthDenver2023(profileOwner);
+
+        return true;
     }
 }
