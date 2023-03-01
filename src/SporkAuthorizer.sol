@@ -15,9 +15,12 @@ contract SporkAuthorizer is IAuthorize {
                 0xAB594600376Ec9fD91F8e885dADF0CE036862dE0 //polygon MATIC/USD 0% 27s 8 decimals
             );
     address constant public ethDenverNFT = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
+    
+    mapping(address => bytes32) public hashedAttests;
 
     error DidNotAttendEthDenver2023(address target);
     error NotEnoughTokens(uint256 amount);
+    error InvalidTransactions(address target, string[] data);
 
     constructor() {
    
@@ -33,8 +36,6 @@ contract SporkAuthorizer is IAuthorize {
         //Sender required to have a EthDenver2023 NFT ticket
         if(!(IERC721(ethDenverNFT).balanceOf(sender) > 0)) revert DidNotAttendEthDenver2023(sender);
 
-        
-
         return true;
     }
 
@@ -43,7 +44,14 @@ contract SporkAuthorizer is IAuthorize {
     function isApprovedToReceive(address profileOwner) external view returns (bool) {
         //Receiver required to have a EthDenver2023 NFT ticket
         if(!(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0)) revert DidNotAttendEthDenver2023(profileOwner);
+
         return true;
+    }
+
+    function isValidTransactions(address profile, address target, string message) external view returns (bool) {
+        bytes32 currentHash = hashedAttests[profile];
+        currentHash ^= keccak256(abiencodePacked(message));
+        hashedAttests[profile] = currentHash;
     }
 
     function getLatestPrice() public view returns (int) {
