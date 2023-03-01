@@ -53,6 +53,15 @@ having a blacklist would disable posting and always return an invalid message ha
 
 reinventing your identity is a feature and not a bug. if you want to cut bad ties, that's your perogative in a decnetralized world.
 
+Why is the own your own profile contract the better paradigm then one contract?
+-opt-in
+-no centralized contract holder
+-you can compose reputation from all other centralized contracts
+-you can find all the repuation in one place rather than scouring different contracts for it
+
+
+
+
 ## Specification
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119 and RFC 8174.
