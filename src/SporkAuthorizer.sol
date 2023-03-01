@@ -20,7 +20,6 @@ contract SporkAuthorizer is IAuthorize {
 
     error DidNotAttendEthDenver2023(address target);
     error NotEnoughTokens(uint256 amount);
-    error InvalidTransactions(address target, string[] data);
 
     constructor() {
    
@@ -28,7 +27,7 @@ contract SporkAuthorizer is IAuthorize {
 
     /// @notice Profile contract calls Authorizer contract. 
     /// @param sender is the original transaction sender
-    function isApprovedToSend(address sender) external view returns (bool) {
+    function _isApprovedToSend(address sender) public view returns (bool) {
         //Authorizer requires profile to have a certain amount of USD value in the wallet
         //math: 8+18-18 = 8 decimals, checks if address has > 0.01 USD worth of MATIC
         if(!(uint256(getLatestPrice()) * sender.balance / 1 ether > 1e6)) revert NotEnoughTokens(sender.balance);
@@ -41,17 +40,23 @@ contract SporkAuthorizer is IAuthorize {
 
     /// @notice Profile contract calls Authorizer contract
     /// @param profileOwner is the owner of the profile contract
-    function isApprovedToReceive(address profileOwner) external view returns (bool) {
+    function _isApprovedToReceive(address profileOwner) public view returns (bool) {
         //Receiver required to have a EthDenver2023 NFT ticket
         if(!(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0)) revert DidNotAttendEthDenver2023(profileOwner);
 
         return true;
     }
 
-    function isValidTransactions(address profile, address target, string message) external view returns (bool) {
+    function validateTransaction(address sender, address profile, string calldata message) external returns (bool) {
+        _isApprovedToReceive(IProfile(profile).getOwner());
+        _isApprovedToSend(sender);
         bytes32 currentHash = hashedAttests[profile];
-        currentHash ^= keccak256(abiencodePacked(message));
+        currentHash ^= keccak256(abi.encodePacked(message));
         hashedAttests[profile] = currentHash;
+    }
+
+    function getCurrentProfileHash(address profile) external view returns (bytes32) {
+        return hashedAttests[profile];
     }
 
     function getLatestPrice() public view returns (int) {

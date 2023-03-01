@@ -3,7 +3,9 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "../src/Profile.sol";
+import "../src/interfaces/IProfile.sol";
 import "../src/SporkAuthorizer.sol";
+import "../src/DummyAuthorizer.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -14,7 +16,7 @@ contract ProfileTest is Test {
 
     Profile public eg;
     SporkAuthorizer public ek;
-    SporkAuthorizer public eo;
+    DummyAuthorizer public eo;
     address[] public list;
 
 
@@ -30,31 +32,69 @@ contract ProfileTest is Test {
         vm.prank(cam);
         eg = new Profile();
         ek = new SporkAuthorizer();
-        eo = new SporkAuthorizer();
+        eo = new DummyAuthorizer();
    }
 
     function testAuthorizerAddition() public {
         vm.prank(cam);
-        eg.addAuthorizer(address(ek));
-        //console.log(eg.authorizedContract(address(ek)));
+        eg.addAuthorizer(address(eo));
+        // console.log(eg.authorizedContract(address(ek)));
 
         vm.prank(cam);
-        eg.removeAuthorizer(address(ek));
-        //console.log(eg.authorizedContract(address(ek)));
+        eg.removeAuthorizer(address(eo));
+        // console.log(eg.authorizedContract(address(ek)));
     }
 
     function testAttest() public {
 
         vm.prank(cam);
-        eg.addAuthorizer(address(ek));
+        eg.addAuthorizer(address(eo));
 
-        console.log(uint256(ek.getLatestPrice()).toString());
-        uint256 temp = address(cam).balance;
-        console.log(vm.toString(temp));
-        console.log(vm.toString(uint256(ek.getLatestPrice()) * temp));
+        // console.log(uint256(ek.getLatestPrice()).toString());
+        // uint256 temp = address(cam).balance;
+        // console.log(vm.toString(temp));
+        // console.log(vm.toString(uint256(ek.getLatestPrice()) * temp));
 
         vm.prank(cam);
-        eg.attest(address(ek), "Hello World");
+        eg.attest(address(eo), "Hello World");
+    }
+
+    function testHashes() public {
+
+        vm.prank(cam);
+        eg.addAuthorizer(address(eo));
+
+        // console.log(uint256(ek.getLatestPrice()).toString());
+        // uint256 temp = address(cam).balance;
+        // console.log(vm.toString(temp));
+        // console.log(vm.toString(uint256(ek.getLatestPrice()) * temp));
+
+        vm.prank(cam);
+        eg.attest(address(eo), "Hello World");
+        bytes32 hash1 = eo.getCurrentProfileHash(address(eg));
+
+        vm.prank(cam);
+        eg.attest(address(eo), "A brave new world");
+        bytes32 hash2 = eo.getCurrentProfileHash(address(eg));
+
+        vm.prank(cam);
+        eg.attest(address(eo), "world on fire");
+        bytes32 hash3 = eo.getCurrentProfileHash(address(eg));
+
+
+        vm.prank(cam);
+        eg.deleteAttestation(address(eo), 1);
+
+
+        IProfile.Attestation memory deletedAttest = eg.getAttestation(address(eo), 1);
+        assertEq(deletedAttest.sender, address(eg)); //TODO really, the sender and owner should be diffrent so this assert makes sense.. should assert it is the *owner*
+        console.log(deletedAttest.message);
+        assertEq(deletedAttest.message, "");
+
+        // ensure that the hash does not change when the message is deleted.
+        // since the message is no longer available, anyone recomputing the hash will get a
+        // different result, and flag as suspicious.
+        assertEq(eo.getCurrentProfileHash(address(eg)), hash3);
     }
 
     //logs not returning data
@@ -69,21 +109,16 @@ contract ProfileTest is Test {
 
     function testGetAttestation() public {
         vm.prank(cam);
-        eg.addAuthorizer(address(ek));
+        eg.addAuthorizer(address(eo));
 
         vm.prank(cam);
-        eg.attest(address(ek), "Hello World");
+        eg.attest(address(eo), "Hello World");
 
-        console.log(eg.getAttestation(cam, 0));
-    }
+        IProfile.Attestation memory attest = eg.getAttestation(address(eo), 0);
 
-    function testList() public {
-        list.push(profile1);
-        list.push(cam);
-        list.push(ethdevn);
-        for(uint i=0; i < list.length; i++) {
-            console.log(vm.toString(list[i]));
-        }
+
+        assertEq(attest.sender, cam);
+        assertEq(attest.message, "Hello World");
     }
 
     function testGetAuthorizers() public {
@@ -93,6 +128,9 @@ contract ProfileTest is Test {
         eg.addAuthorizer(address(eo));
         vm.prank(profile1);
         list = eg.getAuthorizerList();
+
+        assertEq(address(ek), list[0]);
+        assertEq(address(eo), list[1]);
 
         for(uint i=0; i < list.length; i++) {
             console.log(vm.toString(list[i]));

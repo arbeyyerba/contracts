@@ -3,12 +3,8 @@ pragma solidity ^0.8.13;
 
 interface IAuthorize {
 
-    //Authorizer defines criteria to approve transaction
-    function isApprovedToSend(address sender) external view returns (bool);
-
-    //Authorizer defines critera to receive transaction
-    function isApprovedToReceive(address receiver) external view returns (bool);
-
     //Authorizer authenticates transaction data from approver and receive
-    function isValidTransactions(address profile, address target) external view returns (bool);
+    function validateTransaction(address sender, address profile, string calldata message) external returns (bool);
+    //Authorizer maintains a hash of all the messages it has authorizes for a profile
+    function getCurrentProfileHash(address profile) external view returns (bytes32);
 }
