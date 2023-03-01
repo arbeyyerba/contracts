@@ -20,7 +20,6 @@ contract SporkAuthorizer is IAuthorize {
 
     error DidNotAttendEthDenver2023(address target);
     error NotEnoughTokens(uint256 amount);
-    error InvalidHash(bytes32 currentHash, bytes32 storedHash);
 
     constructor() {
    
@@ -34,11 +33,6 @@ contract SporkAuthorizer is IAuthorize {
         //validate sender == tx.origin
         _isApprovedToReceive(IProfile(profile).getOwner());
         _isApprovedToSend(sender);
-
-        //validate current Attestation[] hash = latestHash
-        bytes32 profileHashedData = _generateNewHash(IProfile(profile).getAttestations(sender));
-        if(!(keccak256(abi.encodePacked(profileHashedData)) == keccak256(abi.encodePacked(hashedAttests[profile])))) 
-            revert InvalidHash(profileHashedData, hashedAttests[profile]);
 
         //Setting new hash after check completion
         bytes32 currentHash = hashedAttests[profile];
@@ -82,14 +76,5 @@ contract SporkAuthorizer is IAuthorize {
         if(!(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0)) revert DidNotAttendEthDenver2023(profileOwner);
 
         return true;
-    }
-
-    /// @dev This generates the new hash of the current attestation[] on Profile
-    function _generateNewHash(IProfile.Attestation[] memory data) internal pure returns (bytes32 hashedData) {
-        for(uint i = 0; i < data.length; i++){
-            hashedData ^= keccak256(abi.encodePacked(abi.encode(data[i])));
-        }
-
-        return hashedData;
     }
 }
