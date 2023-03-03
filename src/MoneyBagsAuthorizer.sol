@@ -16,29 +16,35 @@ contract SporkAuthorizer is IAuthorize {
             );
     address constant public ethDenverNFT = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
     
-    mapping(address => bytes32) public hashedAttests;
+    mapping(address => bytes32) public hashedPosts;
 
     error DidNotAttendEthDenver2023(address target);
     error NotEnoughTokens(uint256 amount);
+    error InvalidHash(bytes32 currentHash, bytes32 storedHash);
+
+    constructor() {
+   
+    }
 
     /// @notice Profile contract calls Authorizer contract
     /// @dev Need to validate msg.sender is an actual profile contract
     /// @dev Need to validate sender is the tx.origin
-    function validateTransaction(address sender, address profile, string calldata message) external returns (bool) {
-        //validate profile address, maybe use factory pattern?
+    function makeValidPost(address sender, address profile, string calldata message) external {
         //validate sender == tx.origin
-        _isApprovedToReceive(IProfile(profile).getOwner());
-        _isApprovedToSend(sender);
+        if(_isMoneyBags(sender) revert DidNotAttendEthDenver2023(sender);
 
         //Setting new hash after check completion
-        bytes32 currentHash = hashedAttests[profile];
+        bytes32 currentHash = hashedPosts[profile];
         currentHash ^= keccak256(abi.encodePacked(message));
-        hashedAttests[profile] = currentHash;
-        return true;
+        hashedPosts[profile] = currentHash;
+    }
+
+    function isValidPost(address sender, address profile, string calldata message) external view returns (bool) {
+        return  _isMoneyBags(sender);
     }
 
     function getLatestValidatedHash(address profile) external view returns (bytes32) {
-        return hashedAttests[profile];
+        return hashedPosts[profile];
     }
 
     function getLatestPrice() public view returns (int) {
@@ -55,22 +61,9 @@ contract SporkAuthorizer is IAuthorize {
 
     
     /// @param sender is the original transaction sender
-    function _isApprovedToSend(address sender) internal view returns (bool) {
+    function _isMoneybags(address sender) internal view returns (bool) {
         //Authorizer requires profile to have a certain amount of USD value in the wallet
-        //math: 8+18-18 = 8 decimals, checks if address has > 0.01 USD worth of MATIC
-        if(!(uint256(getLatestPrice()) * sender.balance / 1 ether > 1e6)) revert NotEnoughTokens(sender.balance);
-
-        //Sender required to have a EthDenver2023 NFT ticket
-        if(!(IERC721(ethDenverNFT).balanceOf(sender) > 0)) revert DidNotAttendEthDenver2023(sender);
-
-        return true;
-    }
-
-    /// @param profileOwner is the owner of the profile contract
-    function _isApprovedToReceive(address profileOwner) internal view returns (bool) {
-        //Receiver required to have a EthDenver2023 NFT ticket
-        if(!(IERC721(ethDenverNFT).balanceOf(profileOwner) > 0)) revert DidNotAttendEthDenver2023(profileOwner);
-
-        return true;
+        //math: 8+18-18 = 8 decimals, checks if address has >= 100.00 USD worth of MATIC
+        return (uint256(getLatestPrice()) * sender.balance / 1 ether >= 1e6 * 100 * 100)
     }
 }

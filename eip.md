@@ -13,26 +13,41 @@ requires:
 
 ## Abstract
 
-This proposal defines a system where one contract or account can post a message to another contract in a given context as determined by an authorizer contract.
+This proposal defines a system where individual contracts can post messages to one another. In order to avoid sybil attacks, and increase the authenticity and value of these messages, each contract lists a set of authoritative contracts that define rules on who is allowed, and who is not allowed, to post messages.
 
-Profile Contract: A deployed contract owned by an EOA or contract. The owner of the contract may add Authorizer contracts to the determine who can post to their profile. Profiles could represent and individual, organization, or a contract. They could be deployed by EOA's, multisigs, account abstracted accounts. Anyone entity can deploy multiple contracts.
+This delegation of authority allows the individual contracts to remain decentralized, while still allowing central authority entities to weed out unwanted actors. Since each contract is free to decide it's own list of authorities, there is no ability for one authority to ever control the system. In addition, in this 'opt-in' security scheme, authorities behaving as bad actors can simply be ignored.
 
-Authorizor Contract: A contract that determines verifies context and content of a post. If the poster, the recieving profile, and the message pass the authorization criteria, the post is accepted and can be written to the recievers profile. The poster and the reciever can have different criteria. The authorizer saves the sender, reciever, and message. This data can be crosschecked against a profile contract to verify the integrity of the profile.
+This system is composed of two contract interfaces: The "Profile" contract, and the "Authorizer" contract.
 
-This simple system creates opt-in permissionless reputation system. With it, developers could build reputation based markets, decentralized review boards, credit systems, and more.
+### Profile Contract
 
-A simple implementation would be having the Authorizer verify that both the poster and the reciever own an NFT or a certain amount of an ERC 20 token. If so, they may post on eachother's profile.
+A deployed contract owned by an EOA or contract. The profile contains a set of posted messages. The owner of the contract may add Authorizer contracts to determine who can post to their profile.
 
-A more complex implementation would be defining the Authorizer so that the poster must have made a transactions to the reciever, in a certain time period. The Authorizer could also verify some off-chain test was passed and the message was formatted in a certain way.
+Profiles could represent and individual, organization, or a contract. They could be deployed by EOA's, multisigs, account abstracted accounts. Anyone entity can deploy multiple contracts.
+
+### Authorizer Contract
+
+A contract that hosts a set of rules about whether or not a post can be made. If the poster, the receiving profile contract, and the message pass the given rules, a Profile contract can accept the post.
+
+The poster and the reciever can have different criteria. The authorizer can save the sender, reciever, and message. This data can be crosschecked against a profile contract to verify the integrity of the profile.
 
 ## Motivation
 
-A standard spedcification allowing one EOA or contract to attest / post on another's profile contract. They can do this under certain conditions that the profile contract opted into to be managed by the Authorizer contract.
+This simple system creates an opt-in permissionless reputation system, that can be used to serve many different goals. With it, developers could build social networks, decentralized review boards, employee-owned work profiles, and more. By using common interfaces, this data can be used in reputation based markets, credit systems, and more, increasing the value of the network as a whole.
+
+A simple implementation of this system could just be members within a particular group giving each other endorements on their activity. An Authorizer could easily verify that both the poster and the reciever own an NFT or a certain amount of an ERC 20 token. If so, they may post on eachother's profile. These sorts of tokens are already used frequently to validate membership in groups, and prevent abuse from unknown addresses outside the group.
+
+More complex implementations could verify both on-chain and off-chain data using oracles, or other existing smart-contract patterns. Some powerful examples could include: an Authorizer verifying purchase from a company before leaving a review. Verifying two people are friends via an existing social network off-chain before they can post to one another. Allowing anyone employed by a particular company to endorse each other, providing a form of more authentic work-related endorsements, backed by on-chain attestation. Using zero-knowledge proofs to validate private data before making a public post.
+
+One of the main benefits of this standard is the abstraction of the Profile contract. Rather than having a single contract that manages the state of all possible posts, each actor on the network owns their own contract. While these contracts could still delegate to an existing contract for usability, it forces a higher level of decentralization. In a world with upgradable contracts and patterns, having a single contract can lead to (fees, bad stuff). A primary motivation is to build a network-of-networks where each individual truely owns their own profile.
+
 
 With this standard, we could build:
 -A decentralized review board where the reviewee chooses the conditions of the review and owns it after it has been given. We could do this by configuring the authorizer to validat the poster must have made a transaction of a certain amount to the owner of the reciever's profile contract. 
 -Onchain credit systems. By configuring the authorizer to verify off-chain credit worthiness.
 -Labor markets. By configuring reviews of reputable employers and employees. Employees can own their reputation and verifiably prove it.
+
+## Example Use case
 
 We can imagine a world where restaurants coalesce around a single trusted authorizer contract. They may even form a DAO to maintain the authorizer contract, deploy the profiles, and host a front-end application.
 

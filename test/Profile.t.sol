@@ -48,6 +48,22 @@ contract ProfileTest is Test {
     function testAttest() public {
 
         vm.prank(cam);
+        eg.addAuthorizer(address(eo));
+
+        // console.log(uint256(ek.getLatestPrice()).toString());
+        // uint256 temp = address(cam).balance;
+        // console.log(vm.toString(temp));
+        // console.log(vm.toString(uint256(ek.getLatestPrice()) * temp));
+
+        vm.prank(cam);
+        eg.attest(address(eo), "Hello World");
+        
+        console.log(vm.toString(eo.getLatestValidatedHash(address(eg))));
+    }
+
+    function testSporkDaoValidation() public {
+
+        vm.prank(cam);
         eg.addAuthorizer(address(ek));
 
         // console.log(uint256(ek.getLatestPrice()).toString());
@@ -57,7 +73,7 @@ contract ProfileTest is Test {
 
         vm.prank(cam);
         eg.attest(address(ek), "Hello World");
-        
+
         console.log(vm.toString(ek.getLatestValidatedHash(address(eg))));
     }
 
@@ -74,14 +90,17 @@ contract ProfileTest is Test {
         vm.prank(cam);
         eg.attest(address(eo), "Hello World");
         bytes32 hash1 = eo.getLatestValidatedHash(address(eg));
+        console.log(vm.toString(hash1));
 
         vm.prank(cam);
         eg.attest(address(eo), "A brave new world");
         bytes32 hash2 = eo.getLatestValidatedHash(address(eg));
+        console.log(vm.toString(hash2));
 
         vm.prank(cam);
         eg.attest(address(eo), "world on fire");
         bytes32 hash3 = eo.getLatestValidatedHash(address(eg));
+        console.log(vm.toString(hash3));
 
         vm.prank(cam);
         eg.deleteAttestation(address(eo), 1);

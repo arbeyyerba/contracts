@@ -2,9 +2,29 @@
 pragma solidity ^0.8.13;
 
 interface IAuthorize {
-
-    //Authorizer authenticates transaction data from approver and receive
-    function validateTransaction(address sender, address profile, string calldata message) external returns (bool);
-    //Authorizer maintains a hash of all the messages it has authorizes for a profile
-    function getLatestValidatedHash(address profile) external view returns (bytes32);
+    /// @notice Validate that a post on a profile is valid, and updates the
+    /// current hash of all validated posts.
+    /// @dev throws if any conditions set by the Authorizer are not met for
+    /// this post.
+    // @arg _sender the address that is making the post
+    // @arg _profile the address of the Profile contract to post to
+    // @arg _message the content of the message being posted, or a URI to the
+    // content.
+    function makeValidPost(address _sender, address _profile, string calldata _message) external;
+    // @notice Determine whether a post is valid or not state. returns
+    // true iff the post matches any criteria set by the Authorizer.
+    // @dev returning 'true' from this call should ensure a call to
+    // makeValidPost will succeed using the same arguments.
+    // @arg _sender the address that will make the post
+    // @arg _profile the address of the Profile contract that will be posted to
+    // @arg _message the content of the message to be posted, or a URI to the
+    // content.
+    function isPostValid(address _sender, address _profile, string calldata _message) external view returns (bool);
+    /// @notice The latest hash of all validated posts that this authorizer has
+    /// approved. By recreating this hash from a Profile's posts, an observer
+    /// can identify if the Profile's posts have been deleted, tampered with,
+    /// or did not use this Authorizer.
+    /// @arg _profile The Profile Contract to return the hash for. Each profile
+    /// should have a seperately maintained hash.
+    function latestValidatedHash(address _profile) external view returns (bytes32);
 }
