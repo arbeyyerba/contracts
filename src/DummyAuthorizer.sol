@@ -4,12 +4,8 @@ pragma solidity ^0.8.13;
 import "./interfaces/IAuthorize.sol";
 import "./interfaces/IProfile.sol";
 
-//Error pattern = cheaper than require statements
-
 contract DummyAuthorizer is IAuthorize {
-    constructor() {
-    }
-
+    
     mapping(address => bytes32) hashedAttests;
 
     // function validateTransaction(address profile, address target, string calldata message) external returns (bool) {

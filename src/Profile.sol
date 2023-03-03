@@ -13,11 +13,11 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
  */
 
 contract Profile is IProfile, Ownable, ReentrancyGuard {
+    string public ownerName;
 
     //profile to authorizers
     address[] authorizedContracts;
 
-    //encodePacked(address, string[index]) = more gas efficient, future gas optimization
     //authorizer to messages
     mapping(address => Attestation[]) public attestations;
 
@@ -28,8 +28,8 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     error AuthorizerDenied();
     error TransactionDenied(address sender, address authorizer);
 
-    constructor() {
-        //put string name storage here
+    constructor(string memory _ownerName) {
+        ownerName = _ownerName;
     }
 
     //
@@ -84,6 +84,11 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     function deleteAttestationWithHash(address authorizer, uint256 index, bytes32 hash) external onlyOwner {
         string memory hashAsString = string(abi.encodePacked(hash));
         attestations[authorizer][index]=Attestation(address(this), hashAsString);
+    }
+
+    /// @dev Set new owner name
+    function setOwnerName(string calldata _newOwnerName) external onlyOwner {
+        ownerName = _newOwnerName;
     }
 
     //

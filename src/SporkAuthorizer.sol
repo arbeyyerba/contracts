@@ -21,10 +21,6 @@ contract SporkAuthorizer is IAuthorize {
     error DidNotAttendEthDenver2023(address target);
     error NotEnoughTokens(uint256 amount);
 
-    constructor() {
-   
-    }
-
     /// @notice Profile contract calls Authorizer contract
     /// @dev Need to validate msg.sender is an actual profile contract
     /// @dev Need to validate sender is the tx.origin
