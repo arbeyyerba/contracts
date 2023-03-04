@@ -57,7 +57,6 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
 
     /// @dev Removes authorizer
     function removeAuthorizer(address badAuthorizer) external onlyOwner{
-        authorizedContracts.push(badAuthorizer);
 
         // TODO this feels very janky.
         bool found = false;
@@ -65,7 +64,7 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
             if(authorizedContracts[i] == badAuthorizer) {
                 found = true;
             }
-            if (found) {
+            if (found && i+1<authorizedContracts.length) {
                 authorizedContracts[i] = authorizedContracts[i+1];
             }
         }
