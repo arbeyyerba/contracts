@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 //Error pattern = cheaper than require statements
 
-contract SporkAuthorizer is IAuthorize {
+contract MoneyBagsAuthorizer is IAuthorize {
     // Mainnet Polygon
     AggregatorV3Interface constant public priceFeed = 
         AggregatorV3Interface(
@@ -31,7 +31,7 @@ contract SporkAuthorizer is IAuthorize {
     /// @dev Need to validate sender is the tx.origin
     function makeValidPost(address sender, address profile, string calldata message) external {
         //validate sender == tx.origin
-        if(_isMoneyBags(sender) revert DidNotAttendEthDenver2023(sender);
+        if(_isMoneyBags(sender)) revert DidNotAttendEthDenver2023(sender);
 
         //Setting new hash after check completion
         bytes32 currentHash = hashedPosts[profile];
@@ -39,11 +39,11 @@ contract SporkAuthorizer is IAuthorize {
         hashedPosts[profile] = currentHash;
     }
 
-    function isValidPost(address sender, address profile, string calldata message) external view returns (bool) {
+    function isPostValid(address sender, address profile, string calldata message) external view returns (bool) {
         return  _isMoneyBags(sender);
     }
 
-    function getLatestValidatedHash(address profile) external view returns (bytes32) {
+    function latestValidatedHash(address profile) external view returns (bytes32) {
         return hashedPosts[profile];
     }
 
@@ -61,9 +61,9 @@ contract SporkAuthorizer is IAuthorize {
 
     
     /// @param sender is the original transaction sender
-    function _isMoneybags(address sender) internal view returns (bool) {
+    function _isMoneyBags(address sender) internal view returns (bool) {
         //Authorizer requires profile to have a certain amount of USD value in the wallet
         //math: 8+18-18 = 8 decimals, checks if address has >= 100.00 USD worth of MATIC
-        return (uint256(getLatestPrice()) * sender.balance / 1 ether >= 1e6 * 100 * 100)
+        return uint256(getLatestPrice()) * sender.balance / 1 ether >= 1e6 * 100 * 100;
     }
 }

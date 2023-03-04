@@ -5,6 +5,7 @@ import "./interfaces/IProfile.sol";
 import "./interfaces/IAuthorize.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
 
 /**
     @notice This is the first iteration of a Profile contract. This contract has basic functionality.
@@ -13,7 +14,8 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
  */
 
 contract Profile is IProfile, Ownable, ReentrancyGuard {
-    string public ownerName;
+
+    string ownerName;
 
     //profile to authorizers
     address[] authorizedContracts;
@@ -24,11 +26,7 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     //authorizer and index to message
     mapping(address => mapping(uint256 => string)) public contestations;
 
-    string name;
-
-
     error AuthorizerDenied();
-    error TransactionDenied(address sender, address authorizer);
 
     constructor(string memory _ownerName) {
         ownerName = _ownerName;
@@ -41,11 +39,10 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     /// @notice Attesters needs profile address, authorizer address, and attest message, IPFS CID (32bytes)
     function addPost(address _authorizer, string calldata message) external nonReentrant {
         if(!isAuthorizer(_authorizer)) revert AuthorizerDenied();
-        if(!(IAuthorize(_authorizer).validateTransaction(msg.sender, address(this), message))) 
-            revert TransactionDenied(msg.sender, _authorizer);
+        IAuthorize(_authorizer).makeValidPost(msg.sender, address(this), message);
 
         attestations[_authorizer].push(Attestation(msg.sender, message));
-        emit Attest(msg.sender, _authorizer, getAttestLength(_authorizer) - 1);
+        emit Attest(msg.sender, _authorizer, postLengthByAuthorizer(_authorizer) - 1);
     }
 
     //
@@ -64,11 +61,6 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
         emit AuthorizeChange(badAuthorizer, false);
     }
 
-
-    function setName(string _name) external onlyOwner {
-        name = _name;
-    }
-
     /// @dev Stores contest message onchain
     function addComment(address _authorizer, uint256 index, string calldata message) external onlyOwner {
         contestations[_authorizer][index] = message;
@@ -77,7 +69,7 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
 
     /// @notice allow the owner to delete content they do not agree with. However, this will make the message hashes
     /// not match what the authorizer has on file, so anyone will know the messages were modified.
-    function deleteAttestation(address authorizer, uint256 index) external onlyOwner {
+    function deletePost(address authorizer, uint256 index) external onlyOwner {
         attestations[authorizer][index]=Attestation(address(this), '');
     }
 
@@ -90,7 +82,7 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     ///
     /// By using the contract address as the sender, we also indicate that this is a 'magic' value,
     /// not a real attestation.
-    function deleteAttestationWithHash(address authorizer, uint256 index, bytes32 hash) external onlyOwner {
+    function deletePostWithHash(address authorizer, uint256 index, bytes32 hash) external onlyOwner {
         string memory hashAsString = string(abi.encodePacked(hash));
         attestations[authorizer][index]=Attestation(address(this), hashAsString);
     }
@@ -104,7 +96,7 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     // EXTERNAL VIEW
     //
 
-    function getOwner() external view returns (address) {
+    function profileOwner() external view returns (address) {
         return owner();
     }
 
@@ -132,7 +124,7 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     //
 
     /// @dev Get total length of message array
-    function postsLengthByAuthorizer(address authorizer) public view returns (uint256) {
+    function postLengthByAuthorizer(address authorizer) public view returns (uint256) {
         return attestations[authorizer].length;
     }
 
@@ -148,6 +140,8 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     }
 
     function getMetadataUri() public view returns (string memory) {
-        return string(abi.encodePacked('data:application/json;base64,', Base64.encode(bytes(string(abi.encodePacked('{"name":"', name, '"}')))));
+        return string(
+            abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(string(abi.encodePacked("{'name':'", ownerName, "'}")))))
+        );
     }
 }

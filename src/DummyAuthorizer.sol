@@ -12,14 +12,14 @@ contract DummyAuthorizer is IAuthorize {
 
     // function validateTransaction(address profile, address target, string calldata message) external returns (bool) {
     function makeValidPost(address sender, address profile, string calldata message) external {
-        if(!profile == msg.sender) revert InvalidCaller(profile);
+        if(profile != msg.sender) revert InvalidCaller(profile);
 
         bytes32 currentHash = hashedPosts[profile];
         currentHash ^= keccak256(abi.encodePacked(message));
         hashedPosts[profile] = currentHash;
     }
 
-    function isValidPost(address sender, address profile, string calldata message) external returns (bool) {
+    function isPostValid(address sender, address profile, string calldata message) external view returns (bool) {
         return true;
     }
 

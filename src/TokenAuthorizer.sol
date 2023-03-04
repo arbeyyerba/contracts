@@ -4,13 +4,13 @@ pragma solidity ^0.8.13;
 import "./interfaces/IAuthorize.sol";
 import "./interfaces/IProfile.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TokenAuthorizer is IAuthorize {
-    address erc20Address = 0x0;
-    uint256 amount = 0;
+    address erc20Address;
+    uint256 amount;
     
-    mapping(address => bytes32) public hashPosts;
+    mapping(address => bytes32) public hashedPosts;
 
     error NotEnoughTokens(address sender);
     error InvalidCaller(address profile);
@@ -28,27 +28,27 @@ contract TokenAuthorizer is IAuthorize {
         //validate sender == tx.origin
         //validate caller is the profile
 
-        if(!_hasTokens(IProfile(profile).getOwner())) revert NotEnoughTokens(profileOwner);
+        if(!_hasTokens(IProfile(profile).profileOwner())) revert NotEnoughTokens(IProfile(profile).profileOwner());
         if(!_hasTokens(sender)) revert NotEnoughTokens(sender);
-        if(!profile == msg.sender) revert InvalidCaller(profile);
+        if(profile != msg.sender) revert InvalidCaller(profile);
 
         //Setting new hash after check completion
         bytes32 currentHash = hashedPosts[profile];
         currentHash ^= keccak256(abi.encodePacked(message));
-        hashPosts[profile] = currentHash;
+        hashedPosts[profile] = currentHash;
     }
 
-    function isValidPost(address sender, address profile, string calldata message) external view returns (bool) {
-        return _hasTokens(IProfile(profile).getOwner()) && _hasTokens(sender);
+    function isPostValid(address sender, address profile, string calldata message) external view returns (bool) {
+        return _hasTokens(IProfile(profile).profileOwner()) && _hasTokens(sender);
     }
 
-    function getLatestValidatedHash(address profile) external view returns (bytes32) {
-        return hashPosts[profile];
+    function latestValidatedHash(address profile) external view returns (bytes32) {
+        return hashedPosts[profile];
     }
 
     /// @param sender is the original transaction sender
     function _hasTokens(address sender) internal view returns (bool) {
         //Sender required to have a EthDenver2023 NFT ticket
-        return (IERC20(erc20Address).balanceOf(sender) > amount)
+        return IERC20(erc20Address).balanceOf(sender) > amount;
     }
 }

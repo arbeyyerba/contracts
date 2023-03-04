@@ -16,7 +16,8 @@ contract NftAuthorizer is IAuthorize {
 
     error DidNotAttendEthDenver2023(address target);
 
-    constructor() {
+    constructor(address _erc721Contract) {
+        erc721Contract = _erc721Contract;
     }
 
     /// @notice Profile contract calls Authorizer contract
@@ -25,7 +26,7 @@ contract NftAuthorizer is IAuthorize {
     function makeValidPost(address sender, address profile, string calldata message) external {
         //validate profile address, maybe use factory pattern?
         //validate sender == tx.origin
-        if(!_hasNft(IProfile(profile).getOwner())) revert DidNotAttendEthDenver2023(profileOwner);
+        if(!_hasNft(IProfile(profile).profileOwner())) revert DidNotAttendEthDenver2023(IProfile(profile).profileOwner());
         if(!_hasNft(sender)) revert DidNotAttendEthDenver2023(sender);
 
         //Setting new hash after check completion
@@ -34,11 +35,11 @@ contract NftAuthorizer is IAuthorize {
         hashedPosts[profile] = currentHash;
     }
 
-    function isValidPost(address sender, address profile, string calldata message) external view returns (bool) {
-        return _hasNft(IProfile(profile).getOwner()) && _hasNft(sender);
+    function isPostValid(address sender, address profile, string calldata message) external view returns (bool) {
+        return _hasNft(IProfile(profile).profileOwner()) && _hasNft(sender);
     }
 
-    function getLatestValidatedHash(address profile) external view returns (bytes32) {
+    function latestValidatedHash(address profile) external view returns (bytes32) {
         return hashedPosts[profile];
     }
 

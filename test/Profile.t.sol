@@ -4,7 +4,9 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "../src/Profile.sol";
 import "../src/interfaces/IProfile.sol";
-import "../src/SporkAuthorizer.sol";
+import "../src/TokenAuthorizer.sol";
+import "../src/NftAuthorizer.sol";
+import "../src/MoneyBagsAuthorizer.sol";
 import "../src/DummyAuthorizer.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -14,9 +16,9 @@ contract ProfileTest is Test {
    
     uint256 polygon;
 
-    Profile public eg;
-    SporkAuthorizer public ek;
-    DummyAuthorizer public eo;
+    Profile public profile;
+    MoneyBagsAuthorizer public moneyBags;
+    DummyAuthorizer public dummyAuth;
     address[] public list;
 
 
@@ -30,57 +32,50 @@ contract ProfileTest is Test {
         polygon = vm.createSelectFork(POLYGON_RPC_URL);
 
         vm.prank(cam);
-        eg = new Profile();
-        ek = new SporkAuthorizer();
-        eo = new DummyAuthorizer();
+        profile = new Profile("profile");
+        moneyBags = new MoneyBagsAuthorizer();
+        dummyAuth = new DummyAuthorizer();
    }
 
     function testAuthorizerAddition() public {
         vm.prank(cam);
-        eg.addAuthorizer(address(eo));
-        // console.log(eg.authorizedContract(address(ek)));
+        profile.addAuthorizer(address(dummyAuth));
 
         vm.prank(cam);
-        eg.removeAuthorizer(address(eo));
-        // console.log(eg.authorizedContract(address(ek)));
+        profile.removeAuthorizer(address(dummyAuth));
     }
 
     function testAttest() public {
 
         vm.prank(cam);
-        eg.addAuthorizer(address(eo));
-
-        // console.log(uint256(ek.getLatestPrice()).toString());
-        // uint256 temp = address(cam).balance;
-        // console.log(vm.toString(temp));
-        // console.log(vm.toString(uint256(ek.getLatestPrice()) * temp));
+        profile.addAuthorizer(address(dummyAuth));
 
         vm.prank(cam);
-        eg.attest(address(eo), "Hello World");
+        profile.addPost(address(dummyAuth), "Hello World");
         
-        console.log(vm.toString(eo.getLatestValidatedHash(address(eg))));
+        console.log(vm.toString(dummyAuth.latestValidatedHash(address(profile))));
     }
 
-    function testSporkDaoValidation() public {
+    function testMoneyBagsValidator() public {
 
         vm.prank(cam);
-        eg.addAuthorizer(address(ek));
+        profile.addAuthorizer(address(moneyBags));
 
-        // console.log(uint256(ek.getLatestPrice()).toString());
-        // uint256 temp = address(cam).balance;
-        // console.log(vm.toString(temp));
-        // console.log(vm.toString(uint256(ek.getLatestPrice()) * temp));
+        console.log(uint256(moneyBags.getLatestPrice()).toString());
+        uint256 temp = address(cam).balance;
+        console.log(vm.toString(temp));
+        console.log(vm.toString(uint256(moneyBags.getLatestPrice()) * temp));
 
         vm.prank(cam);
-        eg.attest(address(ek), "Hello World");
+        profile.addPost(address(moneyBags), "Hello World");
 
-        console.log(vm.toString(ek.getLatestValidatedHash(address(eg))));
+        console.log(vm.toString(moneyBags.latestValidatedHash(address(profile))));
     }
 
     function testHashes() public {
 
         vm.prank(cam);
-        eg.addAuthorizer(address(eo));
+        profile.addAuthorizer(address(dummyAuth));
 
         // console.log(uint256(ek.getLatestPrice()).toString());
         // uint256 temp = address(cam).balance;
@@ -88,53 +83,43 @@ contract ProfileTest is Test {
         // console.log(vm.toString(uint256(ek.getLatestPrice()) * temp));
 
         vm.prank(cam);
-        eg.attest(address(eo), "Hello World");
-        bytes32 hash1 = eo.getLatestValidatedHash(address(eg));
+        profile.addPost(address(dummyAuth), "Hello World");
+        bytes32 hash1 = dummyAuth.latestValidatedHash(address(profile));
         console.log(vm.toString(hash1));
 
         vm.prank(cam);
-        eg.attest(address(eo), "A brave new world");
-        bytes32 hash2 = eo.getLatestValidatedHash(address(eg));
+        profile.addPost(address(dummyAuth), "A brave new world");
+        bytes32 hash2 = dummyAuth.latestValidatedHash(address(profile));
         console.log(vm.toString(hash2));
 
         vm.prank(cam);
-        eg.attest(address(eo), "world on fire");
-        bytes32 hash3 = eo.getLatestValidatedHash(address(eg));
+        profile.addPost(address(dummyAuth), "world on fire");
+        bytes32 hash3 = dummyAuth.latestValidatedHash(address(profile));
         console.log(vm.toString(hash3));
 
         vm.prank(cam);
-        eg.deleteAttestation(address(eo), 1);
+        profile.deletePost(address(dummyAuth), 1);
 
 
-        IProfile.Attestation memory deletedAttest = eg.getAttestation(address(eo), 1);
-        assertEq(deletedAttest.sender, address(eg)); //TODO really, the sender and owner should be diffrent so this assert makes sense.. should assert it is the *owner*
+        IProfile.Attestation memory deletedAttest = profile.postByAuthorizerAndIndex(address(dummyAuth), 1);
+        assertEq(deletedAttest.sender, address(profile)); //TODO really, the sender and owner should be diffrent so this assert makes sense.. should assert it is the *owner*
         console.log(deletedAttest.message);
         assertEq(deletedAttest.message, "");
 
         // ensure that the hash does not change when the message is deleted.
         // since the message is no longer available, anyone recomputing the hash will get a
         // different result, and flag as suspicious.
-        assertEq(eo.getLatestValidatedHash(address(eg)), hash3);
-    }
-
-    //logs not returning data
-    function testGetContest() public {
-        testAttest();
-
-        vm.prank(cam);
-        eg.contest(address(msg.sender), 0, "Because I am");
-
-        console.log(eg.contestations(msg.sender, 0));
+        assertEq(dummyAuth.latestValidatedHash(address(profile)), hash3);
     }
 
     function testGetAttestation() public {
         vm.prank(cam);
-        eg.addAuthorizer(address(eo));
+        profile.addAuthorizer(address(dummyAuth));
 
         vm.prank(cam);
-        eg.attest(address(eo), "Hello World");
+        profile.addPost(address(dummyAuth), "Hello World");
 
-        IProfile.Attestation memory attest = eg.getAttestation(address(eo), 0);
+        IProfile.Attestation memory attest = profile.postByAuthorizerAndIndex(address(dummyAuth), 0);
 
 
         assertEq(attest.sender, cam);
@@ -143,14 +128,14 @@ contract ProfileTest is Test {
 
     function testGetAuthorizers() public {
         vm.prank(cam);
-        eg.addAuthorizer(address(ek));
+        profile.addAuthorizer(address(moneyBags));
         vm.prank(cam);
-        eg.addAuthorizer(address(eo));
+        profile.addAuthorizer(address(dummyAuth));
         vm.prank(profile1);
-        list = eg.getAuthorizerList();
+        list = profile.getAuthorizerList();
 
-        assertEq(address(ek), list[0]);
-        assertEq(address(eo), list[1]);
+        assertEq(address(moneyBags), list[0]);
+        assertEq(address(dummyAuth), list[1]);
 
         for(uint i=0; i < list.length; i++) {
             console.log(vm.toString(list[i]));

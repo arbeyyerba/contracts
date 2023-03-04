@@ -40,11 +40,10 @@ interface IProfile {
     /// @notice All posts made using the specified authorizer.
     /// @param _authorizer An address for an Authorizer contract to validae
     /// the posting rules
-    /// @param _index The index of the post for this Authorizer
     function postsByAuthorizer(address _authorizer) external view returns (Attestation[] memory);
 
     /// @notice The number of posts made to this profile using the specified
     /// Authorizer contract address
     /// @param _authorizer the Authorizer contract used to make the posts
-    function postLengthByAuthorizer(address _authorizer) external view returns (Attestation[] memory);
+    function postLengthByAuthorizer(address _authorizer) external view returns (uint256);
 }
