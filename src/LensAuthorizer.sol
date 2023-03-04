@@ -14,7 +14,7 @@ contract NftAuthorizer is IAuthorize {
     
     mapping(address => bytes32) public hashedPosts;
 
-    error DidNotAttendEthDenver2023(address target);
+    error NoLensProfile(address target);
 
     constructor(address _erc721Contract) {
         erc721Contract = _erc721Contract;
@@ -26,8 +26,8 @@ contract NftAuthorizer is IAuthorize {
     function makeValidPost(address sender, address profile, string calldata message) external {
         //validate profile address, maybe use factory pattern?
         //validate sender == tx.origin
-        if(!_hasNft(IProfile(profile).profileOwner())) revert DidNotAttendEthDenver2023(IProfile(profile).profileOwner());
-        if(!_hasNft(sender)) revert DidNotAttendEthDenver2023(sender);
+        if(!_hasNft(IProfile(profile).profileOwner())) revert NoLensProfile(IProfile(profile).profileOwner());
+        if(!_hasNft(sender)) revert NoLensProfile(sender);
 
         //Setting new hash after check completion
         bytes32 currentHash = hashedPosts[profile];
