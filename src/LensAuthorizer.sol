@@ -10,11 +10,11 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract NftAuthorizer is IAuthorize {
     // Mainnet Polygon
-    address erc721Contract = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
+    address erc721Contract = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
     
     mapping(address => bytes32) public hashedPosts;
 
-    error NoLensProfile(address target);
+    error DidNotAttendEthDenver2023(address target);
 
     constructor(address _erc721Contract) {
         erc721Contract = _erc721Contract;
@@ -26,8 +26,8 @@ contract NftAuthorizer is IAuthorize {
     function makeValidPost(address sender, address profile, string calldata message) external {
         //validate profile address, maybe use factory pattern?
         //validate sender == tx.origin
-        if(!_hasNft(IProfile(profile).profileOwner())) revert NoLensProfile(IProfile(profile).profileOwner());
-        if(!_hasNft(sender)) revert NoLensProfile(sender);
+        if(!_hasNft(IProfile(profile).profileOwner())) revert DidNotAttendEthDenver2023(IProfile(profile).profileOwner());
+        if(!_hasNft(sender)) revert DidNotAttendEthDenver2023(sender);
 
         //Setting new hash after check completion
         bytes32 currentHash = hashedPosts[profile];
