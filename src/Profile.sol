@@ -58,6 +58,20 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
     /// @dev Removes authorizer
     function removeAuthorizer(address badAuthorizer) external onlyOwner{
         authorizedContracts.push(badAuthorizer);
+
+        // TODO this feels very janky.
+        bool found = false;
+        for(uint i=0; i < authorizedContracts.length; i++) {
+            if(authorizedContracts[i] == badAuthorizer) {
+                found = true;
+            }
+            if (found) {
+                authorizedContracts[i] = authorizedContracts[i+1];
+            }
+        }
+        if (found) {
+            authorizedContracts.pop();
+        }
         emit AuthorizeChange(badAuthorizer, false);
     }
 
@@ -141,7 +155,7 @@ contract Profile is IProfile, Ownable, ReentrancyGuard {
 
     function getMetadataUri() public view returns (string memory) {
         return string(
-            abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(string(abi.encodePacked("{'name':'", ownerName, "'}")))))
+            abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(string(abi.encodePacked("{\"name\":\"", ownerName, "\"}")))))
         );
     }
 }
