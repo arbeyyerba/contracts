@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.10;
 
 import "./interfaces/IAuthorize.sol";
 import "./interfaces/IProfile.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@lens/contracts/interfaces/ILensHub.sol";
 
 contract NftAuthorizer is IAuthorize {
     // Mainnet Polygon
     address erc721Contract = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
+    address lensHub = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
     
     mapping(address => bytes32) public hashedPosts;
 
     error NoLensProfile(address target);
+    error NotFollowingSender();
 
     constructor(address _erc721Contract) {
         erc721Contract = _erc721Contract;
@@ -27,6 +30,10 @@ contract NftAuthorizer is IAuthorize {
         if(!_hasNft(IProfile(profile).profileOwner())) revert NoLensProfile(IProfile(profile).profileOwner());
         if(!_hasNft(sender)) revert NoLensProfile(sender);
 
+        //sender should follow attestee
+        if(IERC721(ILensHub(lensHub).getFollowNFT(ILensHub(lensHub).defaultProfile(profile))).balanceOf(sender) > 0)
+            revert NotFollowingSender();
+
         //Setting new hash after check completion
         bytes32 currentHash = hashedPosts[profile];
         currentHash ^= keccak256(abi.encodePacked(message));
@@ -34,6 +41,7 @@ contract NftAuthorizer is IAuthorize {
     }
 
     function isPostValid(address sender, address profile, string calldata message) external view returns (bool) {
+
         return _hasNft(IProfile(profile).profileOwner()) && _hasNft(sender);
     }
 

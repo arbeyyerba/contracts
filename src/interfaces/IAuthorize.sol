@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.10;
 
 interface IAuthorize {
     /// @notice Validate that a post on a profile is valid, and updates the
