@@ -65,6 +65,8 @@ contract ProfileTest is Test {
         uint256 temp = address(cam).balance;
         console.log(vm.toString(temp));
         console.log(vm.toString(uint256(moneyBags.getLatestPrice()) * temp));
+        console.log(vm.toString(uint256(moneyBags.getLatestPrice()) * temp / 1 ether));
+
 
         vm.prank(cam);
         profile.addPost(address(moneyBags), "Hello World");

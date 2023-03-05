@@ -10,15 +10,11 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract NftAuthorizer is IAuthorize {
     // Mainnet Polygon
-    address erc721Contract = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
+    address public constant erc721Contract = 0x6C84D94E7c868e55AAabc4a5E06bdFC90EF3Bc72;
     
     mapping(address => bytes32) public hashedPosts;
 
     error DidNotAttendEthDenver2023(address target);
-
-    constructor(address _erc721Contract) {
-        erc721Contract = _erc721Contract;
-    }
 
     /// @notice Profile contract calls Authorizer contract
     /// @dev Need to validate msg.sender is an actual profile contract

@@ -18,7 +18,6 @@ contract TokenAuthorizer is IAuthorize {
     constructor(address _erc20Address, uint256 _amount) {
         erc20Address = _erc20Address;
         amount = _amount;
-
     }
 
     /// @notice Profile contract calls Authorizer contract
@@ -30,7 +29,7 @@ contract TokenAuthorizer is IAuthorize {
 
         if(!_hasTokens(IProfile(profile).profileOwner())) revert NotEnoughTokens(IProfile(profile).profileOwner());
         if(!_hasTokens(sender)) revert NotEnoughTokens(sender);
-        if(profile != msg.sender) revert InvalidCaller(profile);
+        //if(profile != msg.sender) revert InvalidCaller(profile);
 
         //Setting new hash after check completion
         bytes32 currentHash = hashedPosts[profile];

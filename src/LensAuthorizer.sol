@@ -6,8 +6,6 @@ import "./interfaces/IProfile.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-//Error pattern = cheaper than require statements
-
 contract NftAuthorizer is IAuthorize {
     // Mainnet Polygon
     address erc721Contract = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
