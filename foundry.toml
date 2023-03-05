@@ -4,13 +4,16 @@ out = 'out'
 libs = ['lib']
 
 [rpc_endpoints]
-matic = "${MATIC_RPC_URL}"
+polygon = "${POLYGON_RPC_URL}"
 
 [etherscan]
-matic = { key = "MATICSCAN_API_KEY" }
+polygon = { key = "POLYSCAN_API_KEY" }
 
 # For local deployment, use:
 # forge script script/Profile.s.sol:ProfileScript --fork-url http://localhost:8545 --broadcast
+
+# For testnet deployment, use:
+# forge script script/Profile.s.sol:ProfileScript --rpc-url $MATIC_RPC_URL --broadcast --verify -vvvv
 
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
