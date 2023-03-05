@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.10;
 
 import "./interfaces/IAuthorize.sol";
 import "./interfaces/IProfile.sol";
@@ -56,7 +56,7 @@ contract MoneyBagsAuthorizer is IAuthorize {
     /// @param sender is the original transaction sender
     function _isMoneyBags(address sender) internal view returns (bool) {
         //Authorizer requires profile to have a certain amount of USD value in the wallet
-        //math: 8+18-18 = 8 decimals, checks if address has >= 1.00 USD worth of MATIC
+        //math: 8+18-18 = 8 decimals, checks if address has >= 10.00 USD worth of MATIC
         return (uint256(getLatestPrice()) * sender.balance / 1 ether) > 10e8;
     }
 }
