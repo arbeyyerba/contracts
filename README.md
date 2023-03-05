@@ -26,12 +26,14 @@ https://hyperspace.filfox.info/en/address/0xb3C3aa3Ea5db8bCaB931D60EF7824214e034
 
 Profile:
 https://goerli.basescan.org/address/0xdb203c53a83aC42F5b03D66F60F279e87342B693
+
 Authorizer:
 https://goerli.basescan.org/address/0xb3C3aa3Ea5db8bCaB931D60EF7824214e034279b
 
 ## ZkSync Profile Deployment:
 Profile:
 https://explorer.zksync.io/address/0xBe82448514BeCdF92a731662c761E770A3AC2DB7
+
 Authorizer:
 https://explorer.zksync.io/address/0x63a92fFe305A6aA55AbB1adC4D7991E77c12c53b
 
