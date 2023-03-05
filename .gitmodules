@@ -10,3 +10,6 @@
 	path = lib/chainlink
 	url = https://github.com/smartcontractkit/chainlink
 	branch = v1.12.0
+[submodule "lib/core"]
+	path = lib/core
+	url = https://github.com/lens-protocol/core
